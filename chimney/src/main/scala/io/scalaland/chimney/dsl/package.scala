@@ -8,7 +8,7 @@ import scala.language.experimental.macros
   */
 package object dsl {
 
-  implicit val config: Config = Config(useDefaultValues = true)
+  implicit val config: Config.EnableDefaultValues[Config.Empty] = new Config.EnableDefaultValues[Config.Empty]
 
   /** Provides transformer operations on values of any type.
     *
@@ -22,7 +22,7 @@ package object dsl {
       * @tparam To target type
       * @return [[io.scalaland.chimney.dsl.TransformerInto]]
       */
-    final def into[To]: TransformerInto[From, To, TransformerCfg.Empty] =
+    final def into[To]: TransformerInto[From, To, Config.Empty, TransformerCfg.Empty] =
       new TransformerInto(source, new TransformerDefinition[From, To, TransformerCfg.Empty](Map.empty, Map.empty))
 
     /** Performs in-place transformation of captured source value to target type.
@@ -47,7 +47,8 @@ package object dsl {
       * @tparam To target type
       * @return [[io.scalaland.chimney.dsl.TransformerFInto]]
       */
-    final def intoF[F[+_], To]: TransformerFInto[F, From, To, TransformerCfg.WrapperType[F, TransformerCfg.Empty]] =
+    final def intoF[F[+_], To]
+        : TransformerFInto[F, From, To, Config.Empty, TransformerCfg.WrapperType[F, TransformerCfg.Empty]] =
       new TransformerFInto(
         source,
         new TransformerFDefinition[F, From, To, TransformerCfg.WrapperType[F, TransformerCfg.Empty]](

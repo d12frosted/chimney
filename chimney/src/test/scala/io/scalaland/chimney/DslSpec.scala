@@ -262,6 +262,16 @@ object DslSpec extends TestSuite {
           Baah(10, Foo(300)).into[Baahr].disableDefaultValues.transform
         """)
           .check("", "Chimney can't derive transformation from Baah to Baahr")
+
+        // val config: Config = Config(false)
+        // val transformer = Transformer.derive[Foo, Bar](config)
+        // Foo(100).transformInto[Bar](transformer)
+        compileError("""
+          val config: Config = Config(false)
+          val transformer: Transformer[Foo, Bar] = Transformer.derive[Foo, Bar](config)
+          Foo(10).transformInto[Bar](transformer)
+        """)
+          .check("", "Chimney can't derive transformation from Foo to Bar")
       }
     }
 

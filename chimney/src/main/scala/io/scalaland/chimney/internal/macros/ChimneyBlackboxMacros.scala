@@ -2,7 +2,7 @@ package io.scalaland.chimney.internal.macros
 
 import io.scalaland.chimney
 import io.scalaland.chimney.internal.utils.{DerivationGuards, EitherUtils, MacroUtils}
-import io.scalaland.chimney.{Config, Patcher, TransformerF, TransformerFSupport}
+import io.scalaland.chimney.{Config, Configuration, Patcher, TransformerF, TransformerFSupport}
 
 import scala.reflect.macros.blackbox
 
@@ -11,64 +11,56 @@ class ChimneyBlackboxMacros(val c: blackbox.Context)
     with TransformerMacros
     with DerivationGuards
     with MacroUtils
-    with EitherUtils {
+    with EitherUtils
+    with Configuration {
 
   import c.universe._
 
-  def buildTransformerImpl[From: WeakTypeTag, To: WeakTypeTag, C: WeakTypeTag](
+  def buildTransformerImpl[From: WeakTypeTag, To: WeakTypeTag, C0: WeakTypeTag, C: WeakTypeTag](
       config: c.Expr[Config]
   ): c.Expr[chimney.Transformer[From, To]] = {
     c.Expr[chimney.Transformer[From, To]] {
-      reify {
-        buildDefinedTransformer[From, To, C](config.splice)
-      }.tree // this doesn't work
+      buildDefinedTransformer[From, To, C0, C]()
     }
   }
 
-  def buildTransformerFImpl[F[+_], From: WeakTypeTag, To: WeakTypeTag, C: WeakTypeTag](
-      config: c.Expr[Config],
+  def buildTransformerFImpl[F[+_], From: WeakTypeTag, To: WeakTypeTag, C0: WeakTypeTag, C: WeakTypeTag](
+      config: c.Expr[C0],
       tfs: c.Expr[TransformerFSupport[F]]
   ): c.Expr[TransformerF[F, From, To]] = {
     c.Expr[TransformerF[F, From, To]] {
-      reify {
-        buildDefinedTransformer[From, To, C](config.splice, tfs.tree)
-      }.tree // this doesn't work
+      buildDefinedTransformer[From, To, C0, C](tfs.tree)
     }
   }
 
-  def transformImpl[From: WeakTypeTag, To: WeakTypeTag, C: WeakTypeTag](config: c.Expr[Config]): c.Expr[To] = {
+  def transformImpl[From: WeakTypeTag, To: WeakTypeTag, C0: WeakTypeTag, C: WeakTypeTag]: c.Expr[To] = {
     c.Expr[To] {
-      reify {
-        expandTransform[From, To, C](config.splice)
-      }.tree // this doesn't work
+      expandTransform[From, To, C0, C]()
     }
   }
 
-  def transformFImpl[F[+_], From: WeakTypeTag, To: WeakTypeTag, C: WeakTypeTag](
-      config: c.Expr[Config],
+  def transformFImpl[F[+_], From: WeakTypeTag, To: WeakTypeTag, C0: WeakTypeTag, C: WeakTypeTag](
       tfs: c.Expr[TransformerFSupport[F]]
   ): c.Expr[F[To]] = {
     c.Expr[F[To]] {
-      reify {
-        expandTransform[From, To, C](config.splice, tfs.tree)
-      }.tree // this doesn't work
+      expandTransform[From, To, C0, C](tfs.tree)
     }
   }
 
-  def deriveTransformerImpl[From: WeakTypeTag, To: WeakTypeTag](
-      config: c.Expr[Config]
+  def deriveTransformerImpl[From: WeakTypeTag, To: WeakTypeTag, C0: WeakTypeTag](
+      config: c.Expr[C0]
   ): c.Expr[chimney.Transformer[From, To]] = {
-    c.Expr[chimney.Transformer[From, To]](
-      reify {
-        val aConfig = config.splice
-        genTransformer[From, To](
-          TransformerConfig(
-            processDefaultValues = aConfig.useDefaultValues,
-            definitionScope = Some((weakTypeOf[From], weakTypeOf[To]))
-          )
+    val configTpe = c.weakTypeOf[C0].typeConstructor
+    c.info(c.enclosingPosition, s"configTpe: $configTpe", true)
+    val config = materialize(configTpe)
+    c.Expr[chimney.Transformer[From, To]] {
+      genTransformer[From, To](
+        TransformerConfig(
+          processDefaultValues = config.processDefaultValues,
+          definitionScope = Some((weakTypeOf[From], weakTypeOf[To]))
         )
-      }.tree // this doesn't work
-    )
+      )
+    }
   }
 
   def deriveTransformerFImpl[F[+_], From: WeakTypeTag, To: WeakTypeTag](

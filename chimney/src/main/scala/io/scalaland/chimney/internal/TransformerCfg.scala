@@ -103,57 +103,57 @@ trait TransformerConfiguration extends MacroUtils {
     val wrapperTypeT = typeOf[WrapperType[F, _] forSome { type F[+_] }].typeConstructor
   }
 
-  def captureTransformerConfig(cfgTpe: Type, config: Config): TransformerConfig = {
+  def captureTransformerConfig(cfgTpe: Type): TransformerConfig = {
 
     import CfgTpeConstructors._
 
     if (cfgTpe =:= emptyT) {
       TransformerConfig(
-        processDefaultValues = config.useDefaultValues
+        processDefaultValues = false // config.useDefaultValues
       )
     } else if (cfgTpe.typeConstructor =:= disableDefaultValuesT) {
-      captureTransformerConfig(cfgTpe.typeArgs.head, config).copy(processDefaultValues = false)
+      captureTransformerConfig(cfgTpe.typeArgs.head).copy(processDefaultValues = false)
     } else if (cfgTpe.typeConstructor =:= enableBeanGettersT) {
-      captureTransformerConfig(cfgTpe.typeArgs.head, config).copy(enableBeanGetters = true)
+      captureTransformerConfig(cfgTpe.typeArgs.head).copy(enableBeanGetters = true)
     } else if (cfgTpe.typeConstructor =:= enableBeanSettersT) {
-      captureTransformerConfig(cfgTpe.typeArgs.head, config).copy(enableBeanSetters = true)
+      captureTransformerConfig(cfgTpe.typeArgs.head).copy(enableBeanSetters = true)
     } else if (cfgTpe.typeConstructor =:= enableOptionDefaultsToNone) {
-      captureTransformerConfig(cfgTpe.typeArgs.head, config).copy(optionDefaultsToNone = true)
+      captureTransformerConfig(cfgTpe.typeArgs.head).copy(optionDefaultsToNone = true)
     } else if (cfgTpe.typeConstructor =:= enableUnsafeOption) {
-      captureTransformerConfig(cfgTpe.typeArgs.head, config).copy(enableUnsafeOption = true)
+      captureTransformerConfig(cfgTpe.typeArgs.head).copy(enableUnsafeOption = true)
     } else if (cfgTpe.typeConstructor =:= enableMethodAccessors) {
-      captureTransformerConfig(cfgTpe.typeArgs.head, config).copy(enableMethodAccessors = true)
+      captureTransformerConfig(cfgTpe.typeArgs.head).copy(enableMethodAccessors = true)
     } else if (cfgTpe.typeConstructor =:= fieldConstT) {
       val List(fieldNameT, rest) = cfgTpe.typeArgs
       val fieldName = fieldNameT.singletonString
-      captureTransformerConfig(rest, config).fieldOverride(fieldName, FieldOverride.Const)
+      captureTransformerConfig(rest).fieldOverride(fieldName, FieldOverride.Const)
     } else if (cfgTpe.typeConstructor =:= fieldComputedT) {
       val List(fieldNameT, rest) = cfgTpe.typeArgs
       val fieldName = fieldNameT.singletonString
-      captureTransformerConfig(rest, config).fieldOverride(fieldName, FieldOverride.Computed)
+      captureTransformerConfig(rest).fieldOverride(fieldName, FieldOverride.Computed)
     } else if (cfgTpe.typeConstructor =:= fieldRelabelledT) {
       val List(fieldNameFromT, fieldNameToT, rest) = cfgTpe.typeArgs
       val fieldNameFrom = fieldNameFromT.singletonString
       val fieldNameTo = fieldNameToT.singletonString
-      captureTransformerConfig(rest, config)
+      captureTransformerConfig(rest)
         .fieldOverride(fieldNameTo, FieldOverride.RenamedFrom(fieldNameFrom))
     } else if (cfgTpe.typeConstructor =:= coproductInstanceT) {
       val List(instanceType, targetType, rest) = cfgTpe.typeArgs
-      captureTransformerConfig(rest, config).coproductInstance(instanceType, targetType)
+      captureTransformerConfig(rest).coproductInstance(instanceType, targetType)
     } else if (cfgTpe.typeConstructor =:= wrapperTypeT) {
       val List(f, rest) = cfgTpe.typeArgs
-      captureTransformerConfig(rest, config).copy(wrapperType = Some(f))
+      captureTransformerConfig(rest).copy(wrapperType = Some(f))
     } else if (cfgTpe.typeConstructor =:= fieldConstFT) {
       val List(fieldNameT, rest) = cfgTpe.typeArgs
       val fieldName = fieldNameT.singletonString
-      captureTransformerConfig(rest, config).fieldOverride(fieldName, FieldOverride.ConstF)
+      captureTransformerConfig(rest).fieldOverride(fieldName, FieldOverride.ConstF)
     } else if (cfgTpe.typeConstructor =:= fieldComputedFT) {
       val List(fieldNameT, rest) = cfgTpe.typeArgs
       val fieldName = fieldNameT.singletonString
-      captureTransformerConfig(rest, config).fieldOverride(fieldName, FieldOverride.ComputedF)
+      captureTransformerConfig(rest).fieldOverride(fieldName, FieldOverride.ComputedF)
     } else if (cfgTpe.typeConstructor =:= coproductInstanceFT) {
       val List(instanceType, targetType, rest) = cfgTpe.typeArgs
-      captureTransformerConfig(rest, config).coproductInstanceF(instanceType, targetType)
+      captureTransformerConfig(rest).coproductInstanceF(instanceType, targetType)
     } else {
       // $COVERAGE-OFF$
       c.abort(c.enclosingPosition, "Bad internal transformer config type shape!")
