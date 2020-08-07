@@ -9,6 +9,8 @@ object PBTransformationSpec extends TestSuite {
 
   import dsl._
 
+  implicit val config: Config = dsl.config.copy(useDefaultValues = true)
+
   val tests = Tests {
 
     "transform value classes between their primitive representations" - {
