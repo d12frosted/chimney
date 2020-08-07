@@ -1,24 +1,30 @@
 package io.scalaland.chimney.internal.macros
 
-import io.scalaland.chimney.Config
+import io.scalaland.chimney.{Config, Configuration}
 import io.scalaland.chimney.internal._
 import io.scalaland.chimney.internal.utils.{DerivationGuards, EitherUtils, MacroUtils}
 
 import scala.reflect.macros.blackbox
 
-trait TransformerMacros extends TransformerConfiguration with MappingMacros with TargetConstructorMacros {
+trait TransformerMacros
+    extends Configuration
+    with TransformerConfiguration
+    with MappingMacros
+    with TargetConstructorMacros {
   this: DerivationGuards with MacroUtils with EitherUtils =>
 
   val c: blackbox.Context
 
   import c.universe._
 
-  def buildDefinedTransformer[From: WeakTypeTag, To: WeakTypeTag, C: WeakTypeTag](
-      aConfig: Config,
+  def buildDefinedTransformer[From: WeakTypeTag, To: WeakTypeTag, C0: WeakTypeTag, C: WeakTypeTag](
       tfsTree: Tree = EmptyTree
   ): Tree = {
+    val C0 = weakTypeOf[C0]
     val C = weakTypeOf[C]
-    val config = captureTransformerConfig(C, aConfig).copy(
+    val mConfig = materialize(C0)
+    val config = captureTransformerConfig(C).copy(
+      processDefaultValues = mConfig.processDefaultValues,
       definitionScope = Some((weakTypeOf[From], weakTypeOf[To])),
       wrapperSupportInstance = tfsTree
     )
@@ -36,14 +42,16 @@ trait TransformerMacros extends TransformerConfiguration with MappingMacros with
     }
   }
 
-  def expandTransform[From: WeakTypeTag, To: WeakTypeTag, C: WeakTypeTag](
-      aConfig: Config,
+  def expandTransform[From: WeakTypeTag, To: WeakTypeTag, C0: WeakTypeTag, C: WeakTypeTag](
       tfsTree: Tree = EmptyTree
   ): Tree = {
+    val C0 = weakTypeOf[C0]
     val C = weakTypeOf[C]
     val tiName = TermName(c.freshName("ti"))
-    val config = captureTransformerConfig(C, aConfig)
+    val mConfig = materialize(C0)
+    val config = captureTransformerConfig(C)
       .copy(
+        processDefaultValues = mConfig.processDefaultValues,
         transformerDefinitionPrefix = q"$tiName.td",
         wrapperSupportInstance = tfsTree
       )

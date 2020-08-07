@@ -26,8 +26,8 @@ object Transformer {
     * @tparam To type of output value
     * @return [[io.scalaland.chimney.Transformer]] type class definition
     */
-  implicit def derive[From, To](implicit config: Config): Transformer[From, To] =
-    macro ChimneyBlackboxMacros.deriveTransformerImpl[From, To]
+  implicit def derive[From, To, C0 <: Config](implicit config: C0): Transformer[From, To] =
+    macro ChimneyBlackboxMacros.deriveTransformerImpl[From, To, Config.Empty]
 
   /** Creates an empty [[io.scalaland.chimney.dsl.TransformerDefinition]] that
     * you can customize to derive [[io.scalaland.chimney.Transformer]].
