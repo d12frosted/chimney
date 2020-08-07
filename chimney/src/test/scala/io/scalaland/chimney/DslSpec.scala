@@ -25,7 +25,9 @@ object DslSpec extends TestSuite {
       implicit def trans: Transformer[UserName, String] = userNameToStringTransformer
 
       val batman = User("123", UserName("Batman"))
-      val batmanDTO = batman.transformInto[UserDTO]
+      val batmanDTO = batman.transformInto[UserDTO](
+        Transformer.derive[User, UserDTO, Config.EnableDefaultValues[Config.Empty]](config)
+      )
 
       batmanDTO.id ==> "123"
       batmanDTO.name ==> "BatmanT"
