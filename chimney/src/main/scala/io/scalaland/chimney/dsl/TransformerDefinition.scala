@@ -1,6 +1,6 @@
 package io.scalaland.chimney.dsl
 
-import io.scalaland.chimney.Transformer
+import io.scalaland.chimney.{Config, Transformer}
 import io.scalaland.chimney.internal.TransformerCfg._
 import io.scalaland.chimney.internal._
 import io.scalaland.chimney.internal.macros.{ChimneyBlackboxMacros, TransformerDefinitionWhiteboxMacros}
@@ -133,7 +133,7 @@ final class TransformerDefinition[From, To, C <: TransformerCfg](
     *
     * @return [[io.scalaland.chimney.Transformer]] type class instance
     */
-  def buildTransformer: Transformer[From, To] =
+  def buildTransformer(implicit config: Config): Transformer[From, To] =
     macro ChimneyBlackboxMacros.buildTransformerImpl[From, To, C]
 
   /** Used internally by macro. Please don't use in your code.

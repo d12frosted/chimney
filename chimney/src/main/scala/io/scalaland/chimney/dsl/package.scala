@@ -8,6 +8,8 @@ import scala.language.experimental.macros
   */
 package object dsl {
 
+  implicit val config: Config = Config(useDefaultValues = true)
+
   /** Provides transformer operations on values of any type.
     *
     * @param source wrapped source value

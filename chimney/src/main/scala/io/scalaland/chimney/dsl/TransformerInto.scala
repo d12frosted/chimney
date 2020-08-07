@@ -1,5 +1,6 @@
 package io.scalaland.chimney.dsl
 
+import io.scalaland.chimney.Config
 import io.scalaland.chimney.internal.TransformerCfg._
 import io.scalaland.chimney.internal._
 import io.scalaland.chimney.internal.macros.{ChimneyBlackboxMacros, TransformerIntoWhiteboxMacros}
@@ -137,7 +138,7 @@ final class TransformerInto[From, To, C <: TransformerCfg](
     *
     * @return transformed value of type `To`
     */
-  def transform: To =
+  def transform(implicit config: Config): To =
     macro ChimneyBlackboxMacros.transformImpl[From, To, C]
 
   /** Used internally by macro. Please don't use in your code.

@@ -1,5 +1,6 @@
 package io.scalaland.chimney.internal.macros
 
+import io.scalaland.chimney.Config
 import io.scalaland.chimney.internal._
 import io.scalaland.chimney.internal.utils.{DerivationGuards, EitherUtils, MacroUtils}
 
@@ -13,10 +14,11 @@ trait TransformerMacros extends TransformerConfiguration with MappingMacros with
   import c.universe._
 
   def buildDefinedTransformer[From: WeakTypeTag, To: WeakTypeTag, C: WeakTypeTag](
+      aConfig: Config,
       tfsTree: Tree = EmptyTree
   ): Tree = {
     val C = weakTypeOf[C]
-    val config = captureTransformerConfig(C).copy(
+    val config = captureTransformerConfig(C, aConfig).copy(
       definitionScope = Some((weakTypeOf[From], weakTypeOf[To])),
       wrapperSupportInstance = tfsTree
     )
@@ -35,11 +37,12 @@ trait TransformerMacros extends TransformerConfiguration with MappingMacros with
   }
 
   def expandTransform[From: WeakTypeTag, To: WeakTypeTag, C: WeakTypeTag](
+      aConfig: Config,
       tfsTree: Tree = EmptyTree
   ): Tree = {
     val C = weakTypeOf[C]
     val tiName = TermName(c.freshName("ti"))
-    val config = captureTransformerConfig(C)
+    val config = captureTransformerConfig(C, aConfig)
       .copy(
         transformerDefinitionPrefix = q"$tiName.td",
         wrapperSupportInstance = tfsTree
