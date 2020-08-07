@@ -11,8 +11,7 @@ class ChimneyBlackboxMacros(val c: blackbox.Context)
     with TransformerMacros
     with DerivationGuards
     with MacroUtils
-    with EitherUtils
-    with Configuration {
+    with EitherUtils {
 
   import c.universe._
 
@@ -50,8 +49,7 @@ class ChimneyBlackboxMacros(val c: blackbox.Context)
   def deriveTransformerImpl[From: WeakTypeTag, To: WeakTypeTag, C0: WeakTypeTag](
       config: c.Expr[C0]
   ): c.Expr[chimney.Transformer[From, To]] = {
-    val configTpe = c.weakTypeOf[C0].typeConstructor
-    c.info(c.enclosingPosition, s"configTpe: $configTpe", true)
+    val configTpe = weakTypeOf[C0]
     val config = materialize(configTpe)
     c.Expr[chimney.Transformer[From, To]] {
       genTransformer[From, To](
