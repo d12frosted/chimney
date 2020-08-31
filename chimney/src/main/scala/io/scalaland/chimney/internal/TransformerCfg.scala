@@ -1,6 +1,5 @@
 package io.scalaland.chimney.internal
 
-import io.scalaland.chimney.Config
 import io.scalaland.chimney.internal.utils.MacroUtils
 
 import scala.language.existentials
@@ -108,9 +107,7 @@ trait TransformerConfiguration extends MacroUtils {
     import CfgTpeConstructors._
 
     if (cfgTpe =:= emptyT) {
-      TransformerConfig(
-        processDefaultValues = false // config.useDefaultValues
-      )
+      TransformerConfig()
     } else if (cfgTpe.typeConstructor =:= disableDefaultValuesT) {
       captureTransformerConfig(cfgTpe.typeArgs.head).copy(processDefaultValues = false)
     } else if (cfgTpe.typeConstructor =:= enableBeanGettersT) {

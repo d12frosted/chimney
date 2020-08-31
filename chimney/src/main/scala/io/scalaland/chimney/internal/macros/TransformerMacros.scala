@@ -1,6 +1,6 @@
 package io.scalaland.chimney.internal.macros
 
-import io.scalaland.chimney.{Config, Configuration}
+import io.scalaland.chimney.{DisableDefaultValues, EnableDefaultValues, TransformerConfiguration => Configuration}
 import io.scalaland.chimney.internal._
 import io.scalaland.chimney.internal.utils.{DerivationGuards, EitherUtils, MacroUtils}
 
@@ -17,14 +17,17 @@ trait TransformerMacros
 
   import c.universe._
 
-  def buildDefinedTransformer[From: WeakTypeTag, To: WeakTypeTag, C0: WeakTypeTag, C: WeakTypeTag](
+  def buildDefinedTransformer[From: WeakTypeTag, To: WeakTypeTag, Config: WeakTypeTag, C: WeakTypeTag](
       tfsTree: Tree = EmptyTree
   ): Tree = {
-    val C0 = weakTypeOf[C0]
+    val Config = weakTypeOf[Config].dealias
     val C = weakTypeOf[C]
-    val mConfig = materialize(C0)
+    val transformerCfg = materialize(Config)
     val config = captureTransformerConfig(C).copy(
-      processDefaultValues = mConfig.processDefaultValues,
+      processDefaultValues = transformerCfg.processDefaultValues match {
+        case _: EnableDefaultValues  => true
+        case _: DisableDefaultValues => false
+      },
       definitionScope = Some((weakTypeOf[From], weakTypeOf[To])),
       wrapperSupportInstance = tfsTree
     )
@@ -45,13 +48,16 @@ trait TransformerMacros
   def expandTransform[From: WeakTypeTag, To: WeakTypeTag, C0: WeakTypeTag, C: WeakTypeTag](
       tfsTree: Tree = EmptyTree
   ): Tree = {
-    val C0 = weakTypeOf[C0]
+    val C0 = weakTypeOf[C0].dealias
     val C = weakTypeOf[C]
     val tiName = TermName(c.freshName("ti"))
-    val mConfig = materialize(C0)
+    val transformerCfg = materialize(C0)
     val config = captureTransformerConfig(C)
       .copy(
-        processDefaultValues = mConfig.processDefaultValues,
+        processDefaultValues = transformerCfg.processDefaultValues match {
+          case _: EnableDefaultValues  => true
+          case _: DisableDefaultValues => false
+        },
         transformerDefinitionPrefix = q"$tiName.td",
         wrapperSupportInstance = tfsTree
       )

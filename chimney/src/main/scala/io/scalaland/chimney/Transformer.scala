@@ -1,7 +1,7 @@
 package io.scalaland.chimney
 
+import io.scalaland.chimney.dsl.{TransformerDefinition, TransformerFDefinition}
 import io.scalaland.chimney.internal.TransformerCfg
-import io.scalaland.chimney.dsl.{TransformerFDefinition, TransformerDefinition}
 import io.scalaland.chimney.internal.macros.ChimneyBlackboxMacros
 
 import scala.language.experimental.macros
@@ -26,8 +26,10 @@ object Transformer {
     * @tparam To type of output value
     * @return [[io.scalaland.chimney.Transformer]] type class definition
     */
-  implicit def derive[From, To, C0 <: Config](implicit config: C0): Transformer[From, To] =
-    macro ChimneyBlackboxMacros.deriveTransformerImpl[From, To, /*C0*/ Config.EnableDefaultValues[Config.Empty]]
+  implicit def derive[From, To, Config](
+      implicit config: Evidence[Config]
+  ): Transformer[From, To] =
+    macro ChimneyBlackboxMacros.deriveTransformerImpl[From, To, Config]
 
   /** Creates an empty [[io.scalaland.chimney.dsl.TransformerDefinition]] that
     * you can customize to derive [[io.scalaland.chimney.Transformer]].
