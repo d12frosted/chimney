@@ -21,6 +21,16 @@ object DefaultValuesExtractor {
   type Aux[C, V0] = DefaultValuesExtractor[C] {
     type V = V0
   }
+
+  implicit def defaultValuesE[V0 <: DefaultValues]: Aux[TransformerConfig[V0, _], V0] =
+    new DefaultValuesExtractor[TransformerConfig[V0, _]] {
+      type V = V0
+    }
+
+  implicit def defaultDefaultValuesE: Aux[TransformerConfig.DefaultType, EnableDefaultValues] =
+    new DefaultValuesExtractor[TransformerConfig.DefaultType] {
+      type V = EnableDefaultValues
+    }
 }
 
 sealed trait UnsafeOption
@@ -35,6 +45,16 @@ object UnsafeOptionExtractor {
   type Aux[C, V0] = UnsafeOptionExtractor[C] {
     type V = V0
   }
+
+  implicit def unsafeOptionE[V0 <: UnsafeOption]: Aux[TransformerConfig[_, V0], V0] =
+    new UnsafeOptionExtractor[TransformerConfig[_, V0]] {
+      type V = V0
+    }
+
+  implicit def defaultUnsafeOptionE: Aux[TransformerConfig.DefaultType, DisableUnsafeOption] =
+    new UnsafeOptionExtractor[TransformerConfig.DefaultType] {
+      type V = DisableUnsafeOption
+    }
 }
 
 sealed trait MethodAccessors
