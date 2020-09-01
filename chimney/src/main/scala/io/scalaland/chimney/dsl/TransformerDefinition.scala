@@ -18,7 +18,7 @@ final class TransformerDefinition[
     To,
     DefaultValuesC <: DefaultValues,
     UnsafeOptionC <: UnsafeOption,
-    Config <: TransformerConfig[DefaultValuesC, UnsafeOptionC],
+    Config <: TransformerConfig.Type,
     C <: TransformerCfg
 ](
     val overrides: Map[String, Any],

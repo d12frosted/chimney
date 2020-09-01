@@ -29,7 +29,7 @@ final class TransformerInto[
     To,
     DefaultValuesC <: DefaultValues,
     UnsafeOptionC <: UnsafeOption,
-    Config <: TransformerConfig[DefaultValuesC, UnsafeOptionC],
+    Config <: TransformerConfig.Type,
     C <: TransformerCfg
 ](
     val source: From,
@@ -49,7 +49,17 @@ final class TransformerInto[
         TransformerConfig[DefaultValuesC1, UnsafeOptionC1],
         C
       ]
-    ], DefaultValuesC, UnsafeOptionC] {
+    ], DefaultValuesC, UnsafeOptionC]
+    with DasConfigDsl[Lambda[
+      `Config1 <: TransformerConfig.Type` => TransformerInto[
+        From,
+        To,
+        DefaultValuesC,
+        UnsafeOptionC,
+        Config1,
+        C
+      ]
+    ], Config] {
 
   /** Lifts current transformation with provided type constructor `F`.
     *
