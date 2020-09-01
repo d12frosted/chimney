@@ -12,6 +12,39 @@ package object dsl {
   implicit val transformerConfig: Evidence[DefaultTransformerConfig] =
     TransformerConfig.provide(TransformerConfig.default)
 
+  // TODO cleanup instances
+  implicit def defaultValuesE[V0 <: DefaultValues]: DefaultValuesExtractor.Aux[TransformerConfig[V0, _], V0] =
+    new DefaultValuesExtractor[TransformerConfig[V0, _]] {
+      type V = V0
+    }
+
+  implicit def defaultDefaultValuesE: DefaultValuesExtractor.Aux[DefaultTransformerConfig, EnableDefaultValues] =
+    new DefaultValuesExtractor[DefaultTransformerConfig] {
+      type V = EnableDefaultValues
+    }
+
+  implicit def unsafeOptionE[V0 <: UnsafeOption]: UnsafeOptionExtractor.Aux[TransformerConfig[_, V0], V0] =
+    new UnsafeOptionExtractor[TransformerConfig[_, V0]] {
+      type V = V0
+    }
+
+  implicit def defaultUnsafeOptionE: UnsafeOptionExtractor.Aux[DefaultTransformerConfig, DisableUnsafeOption] =
+    new UnsafeOptionExtractor[DefaultTransformerConfig] {
+      type V = DisableUnsafeOption
+    }
+
+  implicit def enableUnsafeOptionE
+      : UnsafeOptionExtractor.Aux[TransformerConfig[_, EnableUnsafeOption], EnableUnsafeOption] =
+    new UnsafeOptionExtractor[TransformerConfig[_, EnableUnsafeOption]] {
+      type V = EnableUnsafeOption
+    }
+
+  implicit def disableUnsafeOptionE
+      : UnsafeOptionExtractor.Aux[TransformerConfig[_, DisableUnsafeOption], DisableUnsafeOption] =
+    new UnsafeOptionExtractor[TransformerConfig[_, DisableUnsafeOption]] {
+      type V = DisableUnsafeOption
+    }
+
   /** Provides transformer operations on values of any type.
     *
     * @param source wrapped source value
@@ -24,24 +57,10 @@ package object dsl {
       * @tparam To target type
       * @return [[io.scalaland.chimney.dsl.TransformerInto]]
       */
-    final def into[To]: TransformerInto[
-      From,
-      To,
-      EnableDefaultValues,
-      DisableUnsafeOption,
-      DefaultTransformerConfig,
-      TransformerCfg.Empty
-    ] = {
+    final def into[To]: TransformerInto[From, To, DefaultTransformerConfig, TransformerCfg.Empty] = {
       new TransformerInto(
         source,
-        new TransformerDefinition[
-          From,
-          To,
-          EnableDefaultValues,
-          DisableUnsafeOption,
-          DefaultTransformerConfig,
-          TransformerCfg.Empty
-        ](Map.empty, Map.empty)
+        new TransformerDefinition[From, To, DefaultTransformerConfig, TransformerCfg.Empty](Map.empty, Map.empty)
       )
     }
 
@@ -67,26 +86,14 @@ package object dsl {
       * @tparam To target type
       * @return [[io.scalaland.chimney.dsl.TransformerFInto]]
       */
-    final def intoF[F[+_], To]: TransformerFInto[
-      F,
-      From,
-      To,
-      EnableDefaultValues,
-      DisableUnsafeOption,
-      DefaultTransformerConfig,
-      TransformerCfg.WrapperType[
-        F,
-        TransformerCfg.Empty
-      ]
-    ] =
+    final def intoF[F[+_], To]
+        : TransformerFInto[F, From, To, DefaultTransformerConfig, TransformerCfg.WrapperType[F, TransformerCfg.Empty]] =
       new TransformerFInto(
         source,
         new TransformerFDefinition[
           F,
           From,
           To,
-          EnableDefaultValues,
-          DisableUnsafeOption,
           DefaultTransformerConfig,
           TransformerCfg.WrapperType[F, TransformerCfg.Empty]
         ](
