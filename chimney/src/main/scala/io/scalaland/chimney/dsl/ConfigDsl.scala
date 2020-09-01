@@ -18,7 +18,8 @@ import io.scalaland.chimney.internal.TransformerCfg.{
 }
 
 // TODO: documentation
-trait AConfigDsl[CC[_ <: TransformerConfig.Type], C <: TransformerConfig.Type] {
+trait AConfigDsl[CC[_ <: DefaultValues, _ <: UnsafeOption], DefaultValuesC <: DefaultValues, UnsafeOptionC <: UnsafeOption] {
+
   def disableDefaultValues: CC[DisableDefaultValues, UnsafeOptionC] =
     this.asInstanceOf[CC[DisableDefaultValues, UnsafeOptionC]]
 
@@ -28,6 +29,18 @@ trait AConfigDsl[CC[_ <: TransformerConfig.Type], C <: TransformerConfig.Type] {
   def enableUnsafeOption: CC[DefaultValuesC, EnableUnsafeOption] =
     this.asInstanceOf[CC[DefaultValuesC, EnableUnsafeOption]]
 }
+
+//trait AConfigDsl[CC[_ <: DefaultValues, _ <: UnsafeOption, _ <: TransformerConfig.Type], DefaultValuesC <: DefaultValues, UnsafeOptionC <: UnsafeOption] {
+//
+//  def disableDefaultValues: CC[DisableDefaultValues, UnsafeOptionC, TransformerConfig[DisableDefaultValues, UnsafeOptionC]] =
+//    this.asInstanceOf[CC[DisableDefaultValues, UnsafeOptionC, TransformerConfig[DisableDefaultValues, UnsafeOptionC]]]
+//
+//  def enableDefaultValues: CC[EnableDefaultValues, UnsafeOptionC, TransformerConfig[EnableDefaultValues, UnsafeOptionC]] =
+//    this.asInstanceOf[CC[EnableDefaultValues, UnsafeOptionC, TransformerConfig[EnableDefaultValues, UnsafeOptionC]]]
+//
+//  def enableUnsafeOption: CC[DefaultValuesC, EnableUnsafeOption, TransformerConfig[DefaultValuesC, EnableUnsafeOption]] =
+//    this.asInstanceOf[CC[DefaultValuesC, EnableUnsafeOption, TransformerConfig[DefaultValuesC, EnableUnsafeOption]]]
+//}
 
 trait ConfigDsl[CC[_ <: TransformerCfg], C <: TransformerCfg] {
 

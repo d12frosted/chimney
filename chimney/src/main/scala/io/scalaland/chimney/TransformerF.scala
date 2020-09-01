@@ -1,6 +1,6 @@
 package io.scalaland.chimney
 
-import io.scalaland.chimney.dsl.TransformerFDefinition
+import io.scalaland.chimney.dsl.{DefaultTransformerConfig, TransformerFDefinition}
 import io.scalaland.chimney.internal.TransformerCfg
 import io.scalaland.chimney.internal.macros.ChimneyBlackboxMacros
 
@@ -47,8 +47,15 @@ object TransformerF {
     * @tparam To   type of output value
     * @return [[io.scalaland.chimney.dsl.TransformerFDefinition]] with defaults
     */
-  def define[F[+_], From, To]
-      : TransformerFDefinition[F, From, To, TransformerCfg.WrapperType[F, TransformerCfg.Empty]] =
+  def define[F[+_], From, To]: TransformerFDefinition[
+    F,
+    From,
+    To,
+    EnableDefaultValues,
+    DisableUnsafeOption,
+    DefaultTransformerConfig,
+    TransformerCfg.WrapperType[F, TransformerCfg.Empty]
+  ] =
     new TransformerFDefinition(Map.empty, Map.empty)
 
 }

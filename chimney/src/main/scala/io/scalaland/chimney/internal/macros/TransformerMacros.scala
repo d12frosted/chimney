@@ -1,6 +1,12 @@
 package io.scalaland.chimney.internal.macros
 
-import io.scalaland.chimney.{DisableDefaultValues, EnableDefaultValues, TransformerConfiguration => Configuration}
+import io.scalaland.chimney.{
+  DisableDefaultValues,
+  DisableUnsafeOption,
+  EnableDefaultValues,
+  EnableUnsafeOption,
+  TransformerConfiguration => Configuration
+}
 import io.scalaland.chimney.internal._
 import io.scalaland.chimney.internal.utils.{DerivationGuards, EitherUtils, MacroUtils}
 
@@ -28,6 +34,10 @@ trait TransformerMacros
         case _: EnableDefaultValues  => true
         case _: DisableDefaultValues => false
       },
+      enableUnsafeOption = transformerCfg.unsafeOption match {
+        case _: EnableUnsafeOption  => true
+        case _: DisableUnsafeOption => false
+      },
       definitionScope = Some((weakTypeOf[From], weakTypeOf[To])),
       wrapperSupportInstance = tfsTree
     )
@@ -49,6 +59,11 @@ trait TransformerMacros
       tfsTree: Tree = EmptyTree
   ): Tree = {
     val C0 = weakTypeOf[C0].dealias
+    c.info(
+      c.enclosingPosition,
+      s"[expandTransform] weakTypeOf[Config] = ${C0}",
+      force = true
+    )
     val C = weakTypeOf[C]
     val tiName = TermName(c.freshName("ti"))
     val transformerCfg = materialize(C0)
@@ -57,6 +72,10 @@ trait TransformerMacros
         processDefaultValues = transformerCfg.processDefaultValues match {
           case _: EnableDefaultValues  => true
           case _: DisableDefaultValues => false
+        },
+        enableUnsafeOption = transformerCfg.unsafeOption match {
+          case _: EnableUnsafeOption  => true
+          case _: DisableUnsafeOption => false
         },
         transformerDefinitionPrefix = q"$tiName.td",
         wrapperSupportInstance = tfsTree

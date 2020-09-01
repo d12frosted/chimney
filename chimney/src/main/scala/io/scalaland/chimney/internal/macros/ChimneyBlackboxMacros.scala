@@ -24,7 +24,6 @@ class ChimneyBlackboxMacros(val c: blackbox.Context)
   }
 
   def buildTransformerFImpl[F[+_], From: WeakTypeTag, To: WeakTypeTag, Config: WeakTypeTag, C: WeakTypeTag](
-      config: c.Expr[Config],
       tfs: c.Expr[TransformerFSupport[F]]
   ): c.Expr[TransformerF[F, From, To]] = {
     c.info(
@@ -38,6 +37,11 @@ class ChimneyBlackboxMacros(val c: blackbox.Context)
   }
 
   def transformImpl[From: WeakTypeTag, To: WeakTypeTag, C0: WeakTypeTag, C: WeakTypeTag]: c.Expr[To] = {
+    c.info(
+      c.enclosingPosition,
+      s"[transformImpl] weakTypeOf[Config] = ${weakTypeOf[C0].dealias}",
+      force = true
+    )
     c.Expr[To] {
       expandTransform[From, To, C0, C]()
     }
