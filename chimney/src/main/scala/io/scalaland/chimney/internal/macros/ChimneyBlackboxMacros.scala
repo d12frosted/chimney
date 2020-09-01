@@ -2,7 +2,7 @@ package io.scalaland.chimney.internal.macros
 
 import io.scalaland.chimney
 import io.scalaland.chimney.internal.utils.{DerivationGuards, EitherUtils, MacroUtils}
-import io.scalaland.chimney.{DisableDefaultValues, EnableDefaultValues, Patcher, TransformerF, TransformerFSupport}
+import io.scalaland.chimney.{Patcher, TransformerF, TransformerFSupport}
 
 import scala.reflect.macros.blackbox
 
@@ -54,33 +54,33 @@ class ChimneyBlackboxMacros(val c: blackbox.Context)
     }
   }
 
-  def deriveTransformerImpl[From: WeakTypeTag, To: WeakTypeTag, C0: WeakTypeTag](
-      config: c.Expr[C0]
+  def deriveTransformerImpl[From: WeakTypeTag, To: WeakTypeTag, O: WeakTypeTag](
+      config: c.Expr[O]
   ): c.Expr[chimney.Transformer[From, To]] = {
-    val configTpe = weakTypeOf[C0].dealias
-    c.info(c.enclosingPosition, s"[deriveTransformerImpl] configTpe = ${configTpe}", force = true)
-    val config = materialize(configTpe)
+    val optionsTpe = weakTypeOf[O].dealias
+    val options = materialize(optionsTpe)
     c.Expr[chimney.Transformer[From, To]] {
       genTransformer[From, To](
         TransformerConfig(
-          processDefaultValues = config.processDefaultValues match {
-            case _: EnableDefaultValues  => true
-            case _: DisableDefaultValues => false
-          },
+          options = options,
           definitionScope = Some((weakTypeOf[From], weakTypeOf[To]))
         )
       )
     }
   }
 
-  def deriveTransformerFImpl[F[+_], From: WeakTypeTag, To: WeakTypeTag](
-      tfs: c.Expr[TransformerFSupport[F]]
+  def deriveTransformerFImpl[F[+_], From: WeakTypeTag, To: WeakTypeTag, O: WeakTypeTag](
+      tfs: c.Expr[TransformerFSupport[F]],
+      config: c.Expr[O]
   )(
       implicit F: WeakTypeTag[F[_]]
   ): c.Expr[TransformerF[F, From, To]] = {
+    val optionsTpe = weakTypeOf[O].dealias
+    val options = materialize(optionsTpe)
     c.Expr[TransformerF[F, From, To]](
       genTransformer[From, To](
         TransformerConfig(
+          options = options,
           definitionScope = Some((weakTypeOf[From], weakTypeOf[To])),
           wrapperType = Some(F.tpe),
           wrapperSupportInstance = tfs.tree

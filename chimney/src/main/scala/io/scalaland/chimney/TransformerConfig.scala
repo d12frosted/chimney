@@ -1,5 +1,6 @@
 package io.scalaland.chimney
 
+import io.scalaland.chimney.internal.TransformerOptions
 import io.scalaland.chimney.internal.utils.MacroUtils
 
 import scala.language.existentials
@@ -89,33 +90,38 @@ object TransformerConfig {
     }
 }
 
-case class TransformerCfg(processDefaultValues: DefaultValues, unsafeOption: UnsafeOption)
-
 trait TransformerConfiguration extends MacroUtils {
   val c: blackbox.Context
 
   import c.universe._
 
-  def materialize(tpe: Type): TransformerCfg = {
+  def materialize(tpe: Type): TransformerOptions = {
     val args = tpe.typeArgs
-    TransformerCfg(
+    TransformerOptions(
       processDefaultValues = materializeDefaultVales(
-        args.headOption.getOrElse(
-          // $COVERAGE-OFF$
-          c.abort(c.enclosingPosition, s"Bad transformer config type shape!: $tpe")
-          // $COVERAGE-ON$
-        )
-      ),
-      unsafeOption = materializeUnsafeOption(
-        args
-          .lift(1)
-          .getOrElse(
-            // $COVERAGE-OFF$
-            c.abort(c.enclosingPosition, s"Bad transformer config type shape!: $tpe")
-            // $COVERAGE-ON$
-          )
-      )
+        extractTypeArg(tpe, args, 0)
+      ) match {
+        case _: EnableDefaultValues  => true
+        case _: DisableDefaultValues => false
+      },
+      enableUnsafeOption = materializeUnsafeOption(
+        extractTypeArg(tpe, args, 1)
+      ) match {
+        case _: EnableUnsafeOption  => true
+        case _: DisableUnsafeOption => false
+      }
     )
+  }
+
+  private def extractTypeArg(tpe: Type, args: List[Type], pos: Int): Type = {
+    args
+      .lift(pos)
+      .getOrElse(
+        // $COVERAGE-OFF$
+        c.abort(c.enclosingPosition, s"Bad transformer config type shape!: $tpe")
+        // $COVERAGE-ON$
+      )
+
   }
 
   object ConfigTpeConstructors {

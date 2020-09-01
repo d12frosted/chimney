@@ -23,21 +23,13 @@ trait TransformerMacros
 
   import c.universe._
 
-  def buildDefinedTransformer[From: WeakTypeTag, To: WeakTypeTag, Config: WeakTypeTag, C: WeakTypeTag](
+  def buildDefinedTransformer[From: WeakTypeTag, To: WeakTypeTag, O: WeakTypeTag, C: WeakTypeTag](
       tfsTree: Tree = EmptyTree
   ): Tree = {
-    val Config = weakTypeOf[Config].dealias
+    val O = weakTypeOf[O].dealias
     val C = weakTypeOf[C]
-    val transformerCfg = materialize(Config)
-    val config = captureTransformerConfig(C).copy(
-      processDefaultValues = transformerCfg.processDefaultValues match {
-        case _: EnableDefaultValues  => true
-        case _: DisableDefaultValues => false
-      },
-      enableUnsafeOption = transformerCfg.unsafeOption match {
-        case _: EnableUnsafeOption  => true
-        case _: DisableUnsafeOption => false
-      },
+    val options = materialize(O)
+    val config = captureTransformerConfig(options, C).copy(
       definitionScope = Some((weakTypeOf[From], weakTypeOf[To])),
       wrapperSupportInstance = tfsTree
     )
@@ -55,28 +47,15 @@ trait TransformerMacros
     }
   }
 
-  def expandTransform[From: WeakTypeTag, To: WeakTypeTag, C0: WeakTypeTag, C: WeakTypeTag](
+  def expandTransform[From: WeakTypeTag, To: WeakTypeTag, O: WeakTypeTag, C: WeakTypeTag](
       tfsTree: Tree = EmptyTree
   ): Tree = {
-    val C0 = weakTypeOf[C0].dealias
-    c.info(
-      c.enclosingPosition,
-      s"[expandTransform] weakTypeOf[Config] = ${C0}",
-      force = true
-    )
+    val O = weakTypeOf[O].dealias
     val C = weakTypeOf[C]
     val tiName = TermName(c.freshName("ti"))
-    val transformerCfg = materialize(C0)
-    val config = captureTransformerConfig(C)
+    val options = materialize(O)
+    val config = captureTransformerConfig(options, C)
       .copy(
-        processDefaultValues = transformerCfg.processDefaultValues match {
-          case _: EnableDefaultValues  => true
-          case _: DisableDefaultValues => false
-        },
-        enableUnsafeOption = transformerCfg.unsafeOption match {
-          case _: EnableUnsafeOption  => true
-          case _: DisableUnsafeOption => false
-        },
         transformerDefinitionPrefix = q"$tiName.td",
         wrapperSupportInstance = tfsTree
       )
@@ -161,7 +140,7 @@ trait TransformerMacros
       expandOptions(srcPrefixTree, config)(From, To)
     } else if (isOption(To)) {
       expandTargetWrappedInOption(srcPrefixTree, config)(From, To)
-    } else if (config.enableUnsafeOption && isOption(From)) {
+    } else if (config.options.enableUnsafeOption && isOption(From)) {
       expandSourceWrappedInOption(srcPrefixTree, config)(From, To)
     } else if (bothEithers(From, To)) {
       expandEithers(srcPrefixTree, config)(From, To)

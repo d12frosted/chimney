@@ -29,13 +29,17 @@ object TransformerF {
     *
     * When transformation can't be derived, it results with compilation error.
     *
-    * @tparam F    wrapper type constructor
-    * @tparam From type of input value
-    * @tparam To   type of output value
+    * @tparam F      wrapper type constructor
+    * @tparam From   type of input value
+    * @tparam To     type of output value
+    * @tparam Config configuration of derived transformer
     * @return [[io.scalaland.chimney.TransformerF]] type class definition
     */
-  implicit def derive[F[+_], From, To](implicit tfs: TransformerFSupport[F]): TransformerF[F, From, To] =
-    macro ChimneyBlackboxMacros.deriveTransformerFImpl[F, From, To]
+  implicit def derive[F[+_], From, To, Config <: TransformerConfig.Type](
+      implicit tfs: TransformerFSupport[F],
+      config: Evidence[Config]
+  ): TransformerF[F, From, To] =
+    macro ChimneyBlackboxMacros.deriveTransformerFImpl[F, From, To, Config]
 
   /** Creates an empty [[io.scalaland.chimney.dsl.TransformerFDefinition]] that
     * you can customize to derive [[io.scalaland.chimney.TransformerF]].
