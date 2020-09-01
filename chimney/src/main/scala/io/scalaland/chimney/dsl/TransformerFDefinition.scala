@@ -8,10 +8,11 @@ import scala.language.experimental.macros
 
 /** Allows customization of [[io.scalaland.chimney.TransformerF]] derivation
   *
-  * @tparam F    wrapper type constructor
-  * @tparam From type of input value
-  * @tparam To   type of output value
-  * @tparam C    type-level encoded config
+  * @tparam F      wrapper type constructor
+  * @tparam From   type of input value
+  * @tparam To     type of output value
+  * @tparam Config type-level encoded config
+  * @tparam C      type-level encoded config
   */
 final class TransformerFDefinition[F[+_], From, To, Config <: TransformerConfig.Type, C <: TransformerCfg](
     val overrides: Map[String, Any],
