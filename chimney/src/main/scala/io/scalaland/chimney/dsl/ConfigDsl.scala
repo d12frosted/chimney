@@ -9,18 +9,51 @@ import io.scalaland.chimney.internal.TransformerCfg.{
 }
 import io.scalaland.chimney._
 
-// TODO: documentation
 trait AConfigDsl[CC[_ <: TransformerConfig.Type], C <: TransformerConfig.Type] {
+
+  /** Fail derivation if `From` type is missing field even if `To` has default value for it.
+    *
+    * By default in such case derivation will fallback to default values.
+    *
+    * @see [[https://scalalandio.github.io/chimney/transformers/default-values.html#disabling-default-values-in-generated-transformer]] for more details
+    */
   def disableDefaultValues[UnsafeOptionC <: UnsafeOption](
       implicit f: UnsafeOptionExtractor.Aux[C, UnsafeOptionC]
   ): CC[TransformerConfig[DisableDefaultValues, UnsafeOptionC]] =
     this.asInstanceOf[CC[TransformerConfig[DisableDefaultValues, UnsafeOptionC]]]
 
+  /** Use default value of field in `To` if field is missing in `From`.
+    *
+    * By default in such case derivation will fallback to default values.
+    *
+    * @see [[https://scalalandio.github.io/chimney/transformers/default-values.html#disabling-default-values-in-generated-transformer]] for more details
+    */
   def enableDefaultValues[UnsafeOptionC <: UnsafeOption](
       implicit f: UnsafeOptionExtractor.Aux[C, UnsafeOptionC]
   ): CC[TransformerConfig[EnableDefaultValues, UnsafeOptionC]] =
     this.asInstanceOf[CC[TransformerConfig[EnableDefaultValues, UnsafeOptionC]]]
 
+  /** Disable unsafe call to `.get` when source type From contains field of type `Option[A]`,
+    * but target type To defines this fields as `A`.
+    *
+    * By default in such case compilation fails.
+    *
+    * @see [[https://scalalandio.github.io/chimney/transformers/unsafe-options.html]] for more details
+    */
+  def disableUnsafeOption[DefaultValuesC <: DefaultValues](
+      implicit f: DefaultValuesExtractor.Aux[C, DefaultValuesC]
+  ): CC[TransformerConfig[DefaultValuesC, DisableUnsafeOption]] =
+    this.asInstanceOf[CC[TransformerConfig[DefaultValuesC, DisableUnsafeOption]]]
+
+  /** Enable unsafe call to `.get` when source type From contains field of type `Option[A]`,
+    * but target type To defines this fields as `A`.
+    *
+    * It's unsafe as code generated this way may throw at runtime.
+    *
+    * By default in such case compilation fails.
+    *
+    * @see [[https://scalalandio.github.io/chimney/transformers/unsafe-options.html]] for more details
+    */
   def enableUnsafeOption[DefaultValuesC <: DefaultValues](
       implicit f: DefaultValuesExtractor.Aux[C, DefaultValuesC]
   ): CC[TransformerConfig[DefaultValuesC, EnableUnsafeOption]] =
