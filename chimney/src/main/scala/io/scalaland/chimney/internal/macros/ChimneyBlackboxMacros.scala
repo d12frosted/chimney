@@ -15,9 +15,8 @@ class ChimneyBlackboxMacros(val c: blackbox.Context)
 
   import c.universe._
 
-  def buildTransformerImpl[From: WeakTypeTag, To: WeakTypeTag, C0: WeakTypeTag, C: WeakTypeTag](
-      config: c.Expr[C0]
-  ): c.Expr[chimney.Transformer[From, To]] = {
+  def buildTransformerImpl[From: WeakTypeTag, To: WeakTypeTag, C0: WeakTypeTag, C: WeakTypeTag]
+      : c.Expr[chimney.Transformer[From, To]] = {
     c.Expr[chimney.Transformer[From, To]] {
       buildDefinedTransformer[From, To, C0, C]()
     }
