@@ -5,7 +5,9 @@ import io.scalaland.chimney.internal.utils.MacroUtils
 import scala.language.existentials
 import scala.reflect.macros.blackbox
 
-trait Evidence[C]
+trait Evidence[C] {
+  def value: C
+}
 
 sealed trait DefaultValues
 final class EnableDefaultValues extends DefaultValues
@@ -34,7 +36,7 @@ final class TransformerConfig[DefaultValuesC <: DefaultValues, UnsafeOptionC <: 
 }
 
 object TransformerConfig {
-  type Type = TransformerConfig[_, _]
+  type Type = TransformerConfig[_ <: DefaultValues, _ <: UnsafeOption]
   type Builder[DefaultValuesC <: DefaultValues, UnsafeOptionC <: UnsafeOption] =
     TransformerConfig[DefaultValuesC, UnsafeOptionC]
 
@@ -42,10 +44,12 @@ object TransformerConfig {
   val default = new TransformerConfig[EnableDefaultValues, DisableUnsafeOption]
 
   def provide[C <: Type](config: C): Evidence[C] =
-    new Evidence[C] {}
+    new Evidence[C] {
+      override def value: C = config
+    }
 }
 
-case class TransformerCfg(processDefaultValues: DefaultValues)
+case class TransformerCfg(processDefaultValues: DefaultValues, unsafeOption: UnsafeOption)
 
 trait TransformerConfiguration extends MacroUtils {
   val c: blackbox.Context
@@ -61,6 +65,15 @@ trait TransformerConfiguration extends MacroUtils {
           c.abort(c.enclosingPosition, s"Bad transformer config type shape!: $tpe")
           // $COVERAGE-ON$
         )
+      ),
+      unsafeOption = materializeUnsafeOption(
+        args
+          .lift(1)
+          .getOrElse(
+            // $COVERAGE-OFF$
+            c.abort(c.enclosingPosition, s"Bad transformer config type shape!: $tpe")
+            // $COVERAGE-ON$
+          )
       )
     )
   }
@@ -68,6 +81,9 @@ trait TransformerConfiguration extends MacroUtils {
   object ConfigTpeConstructors {
     val enableDefaultValuesT = typeOf[EnableDefaultValues].typeConstructor
     val disableDefaultValuesT = typeOf[DisableDefaultValues].typeConstructor
+
+    val enableUnsafeOptionT = typeOf[EnableUnsafeOption].typeConstructor
+    val disableUnsafeOptionT = typeOf[DisableUnsafeOption].typeConstructor
   }
 
   private def materializeDefaultVales(tpe: Type): DefaultValues = {
@@ -79,7 +95,21 @@ trait TransformerConfiguration extends MacroUtils {
       return new DisableDefaultValues
     }
     // $COVERAGE-OFF$
-    c.abort(c.enclosingPosition, s"Bad default values type shape!: ${tpe.resultType}")
+    c.abort(c.enclosingPosition, s"Bad DefaultValues type shape!: ${tpe.resultType}")
     // $COVERAGE-ON$
   }
+
+  private def materializeUnsafeOption(tpe: Type): UnsafeOption = {
+    import ConfigTpeConstructors._
+    if (tpe =:= enableUnsafeOptionT) {
+      return new EnableUnsafeOption
+    }
+    if (tpe =:= disableUnsafeOptionT) {
+      return new DisableUnsafeOption
+    }
+    // $COVERAGE-OFF$
+    c.abort(c.enclosingPosition, s"Bad UnsafeOption type shape!: ${tpe.resultType}")
+    // $COVERAGE-ON$
+  }
+
 }

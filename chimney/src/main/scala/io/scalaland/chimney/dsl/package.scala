@@ -9,9 +9,8 @@ import scala.language.experimental.macros
 package object dsl {
 
   type DefaultTransformerConfig = TransformerConfig.DefaultType
-  implicit val transformerConfig: Evidence[DefaultTransformerConfig] = TransformerConfig.provide(
-    TransformerConfig.default
-  )
+  implicit val transformerConfig: Evidence[DefaultTransformerConfig] =
+    TransformerConfig.provide(TransformerConfig.default)
 
   /** Provides transformer operations on values of any type.
     *
@@ -25,8 +24,25 @@ package object dsl {
       * @tparam To target type
       * @return [[io.scalaland.chimney.dsl.TransformerInto]]
       */
-    final def into[To]: TransformerInto[From, To, DefaultTransformerConfig, TransformerCfg.Empty] = {
-      new TransformerInto(source, new TransformerDefinition[From, To, TransformerCfg.Empty](Map.empty, Map.empty))
+    final def into[To]: TransformerInto[
+      From,
+      To,
+      EnableDefaultValues,
+      DisableUnsafeOption,
+      DefaultTransformerConfig,
+      TransformerCfg.Empty
+    ] = {
+      new TransformerInto(
+        source,
+        new TransformerDefinition[
+          From,
+          To,
+          EnableDefaultValues,
+          DisableUnsafeOption,
+          DefaultTransformerConfig,
+          TransformerCfg.Empty
+        ](Map.empty, Map.empty)
+      )
     }
 
     /** Performs in-place transformation of captured source value to target type.
@@ -51,11 +67,29 @@ package object dsl {
       * @tparam To target type
       * @return [[io.scalaland.chimney.dsl.TransformerFInto]]
       */
-    final def intoF[F[+_], To]
-        : TransformerFInto[F, From, To, DefaultTransformerConfig, TransformerCfg.WrapperType[F, TransformerCfg.Empty]] =
+    final def intoF[F[+_], To]: TransformerFInto[
+      F,
+      From,
+      To,
+      EnableDefaultValues,
+      DisableUnsafeOption,
+      DefaultTransformerConfig,
+      TransformerCfg.WrapperType[
+        F,
+        TransformerCfg.Empty
+      ]
+    ] =
       new TransformerFInto(
         source,
-        new TransformerFDefinition[F, From, To, TransformerCfg.WrapperType[F, TransformerCfg.Empty]](
+        new TransformerFDefinition[
+          F,
+          From,
+          To,
+          EnableDefaultValues,
+          DisableUnsafeOption,
+          DefaultTransformerConfig,
+          TransformerCfg.WrapperType[F, TransformerCfg.Empty]
+        ](
           Map.empty,
           Map.empty
         )

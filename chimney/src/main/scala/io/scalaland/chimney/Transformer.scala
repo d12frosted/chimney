@@ -1,6 +1,6 @@
 package io.scalaland.chimney
 
-import io.scalaland.chimney.dsl.{TransformerDefinition, TransformerFDefinition}
+import io.scalaland.chimney.dsl.{DefaultTransformerConfig, TransformerDefinition, TransformerFDefinition}
 import io.scalaland.chimney.internal.TransformerCfg
 import io.scalaland.chimney.internal.macros.ChimneyBlackboxMacros
 
@@ -26,7 +26,7 @@ object Transformer {
     * @tparam To type of output value
     * @return [[io.scalaland.chimney.Transformer]] type class definition
     */
-  implicit def derive[From, To, Config](
+  implicit def derive[From, To, Config]( // TODO: add constraint
       implicit config: Evidence[Config]
   ): Transformer[From, To] =
     macro ChimneyBlackboxMacros.deriveTransformerImpl[From, To, Config]
@@ -40,8 +40,22 @@ object Transformer {
     * @tparam To type of output value
     * @return [[io.scalaland.chimney.dsl.TransformerDefinition]] with defaults
     */
-  def define[From, To]: TransformerDefinition[From, To, TransformerCfg.Empty] =
-    new TransformerDefinition[From, To, TransformerCfg.Empty](Map.empty, Map.empty)
+  def define[From, To]: TransformerDefinition[
+    From,
+    To,
+    EnableDefaultValues,
+    DisableUnsafeOption,
+    DefaultTransformerConfig,
+    TransformerCfg.Empty
+  ] =
+    new TransformerDefinition[
+      From,
+      To,
+      EnableDefaultValues,
+      DisableUnsafeOption,
+      DefaultTransformerConfig,
+      TransformerCfg.Empty
+    ](Map.empty, Map.empty)
 
   /** Creates an empty [[io.scalaland.chimney.dsl.TransformerFDefinition]] that
     * you can customize to derive [[io.scalaland.chimney.TransformerF]].
@@ -53,7 +67,14 @@ object Transformer {
     * @tparam To   type of output value
     * @return [[io.scalaland.chimney.dsl.TransformerFDefinition]] with defaults
     */
-  def defineF[F[+_], From, To]
-      : TransformerFDefinition[F, From, To, TransformerCfg.WrapperType[F, TransformerCfg.Empty]] =
+  def defineF[F[+_], From, To]: TransformerFDefinition[
+    F,
+    From,
+    To,
+    EnableDefaultValues,
+    DisableUnsafeOption,
+    DefaultTransformerConfig,
+    TransformerCfg.WrapperType[F, TransformerCfg.Empty]
+  ] =
     TransformerF.define[F, From, To]
 }
