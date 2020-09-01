@@ -1,15 +1,5 @@
 package io.scalaland.chimney.dsl
 
-import io.scalaland.chimney.TransformerConfig.UnsafeOptionAux
-import io.scalaland.chimney.{
-  DefaultValues,
-  DisableDefaultValues,
-  EnableDefaultValues,
-  EnableUnsafeOption,
-  Evidence,
-  TransformerConfig,
-  UnsafeOption
-}
 import io.scalaland.chimney.internal.TransformerCfg
 import io.scalaland.chimney.internal.TransformerCfg.{
   EnableBeanGetters,
@@ -17,37 +7,25 @@ import io.scalaland.chimney.internal.TransformerCfg.{
   EnableMethodAccessors,
   EnableOptionDefaultsToNone
 }
-
-trait DasConfigDsl[CC[_ <: TransformerConfig.Type], C <: TransformerConfig.Type] {
-  def disableDefaultValues2[UnsafeOptionC <: UnsafeOption](
-      implicit f: UnsafeOptionAux[C, UnsafeOptionC]
-  ): CC[TransformerConfig[DisableDefaultValues, UnsafeOptionC]] =
-    this.asInstanceOf[CC[TransformerConfig[DisableDefaultValues, UnsafeOptionC]]]
-}
+import io.scalaland.chimney._
 
 // TODO: documentation
-trait AConfigDsl[CC[_ <: DefaultValues, _ <: UnsafeOption], DefaultValuesC <: DefaultValues, UnsafeOptionC <: UnsafeOption] {
-  def disableDefaultValues: CC[DisableDefaultValues, UnsafeOptionC] =
-    this.asInstanceOf[CC[DisableDefaultValues, UnsafeOptionC]]
+trait AConfigDsl[CC[_ <: TransformerConfig.Type], C <: TransformerConfig.Type] {
+  def disableDefaultValues[UnsafeOptionC <: UnsafeOption](
+      implicit f: UnsafeOptionExtractor.Aux[C, UnsafeOptionC]
+  ): CC[TransformerConfig[DisableDefaultValues, UnsafeOptionC]] =
+    this.asInstanceOf[CC[TransformerConfig[DisableDefaultValues, UnsafeOptionC]]]
 
-  def enableDefaultValues: CC[EnableDefaultValues, UnsafeOptionC] =
-    this.asInstanceOf[CC[EnableDefaultValues, UnsafeOptionC]]
+  def enableDefaultValues[UnsafeOptionC <: UnsafeOption](
+      implicit f: UnsafeOptionExtractor.Aux[C, UnsafeOptionC]
+  ): CC[TransformerConfig[EnableDefaultValues, UnsafeOptionC]] =
+    this.asInstanceOf[CC[TransformerConfig[EnableDefaultValues, UnsafeOptionC]]]
 
-  def enableUnsafeOption: CC[DefaultValuesC, EnableUnsafeOption] =
-    this.asInstanceOf[CC[DefaultValuesC, EnableUnsafeOption]]
+  def enableUnsafeOption[DefaultValuesC <: DefaultValues](
+      implicit f: DefaultValuesExtractor.Aux[C, DefaultValuesC]
+  ): CC[TransformerConfig[DefaultValuesC, EnableUnsafeOption]] =
+    this.asInstanceOf[CC[TransformerConfig[DefaultValuesC, EnableUnsafeOption]]]
 }
-
-//trait AConfigDsl[CC[_ <: DefaultValues, _ <: UnsafeOption, _ <: TransformerConfig.Type], DefaultValuesC <: DefaultValues, UnsafeOptionC <: UnsafeOption] {
-//
-//  def disableDefaultValues: CC[DisableDefaultValues, UnsafeOptionC, TransformerConfig[DisableDefaultValues, UnsafeOptionC]] =
-//    this.asInstanceOf[CC[DisableDefaultValues, UnsafeOptionC, TransformerConfig[DisableDefaultValues, UnsafeOptionC]]]
-//
-//  def enableDefaultValues: CC[EnableDefaultValues, UnsafeOptionC, TransformerConfig[EnableDefaultValues, UnsafeOptionC]] =
-//    this.asInstanceOf[CC[EnableDefaultValues, UnsafeOptionC, TransformerConfig[EnableDefaultValues, UnsafeOptionC]]]
-//
-//  def enableUnsafeOption: CC[DefaultValuesC, EnableUnsafeOption, TransformerConfig[DefaultValuesC, EnableUnsafeOption]] =
-//    this.asInstanceOf[CC[DefaultValuesC, EnableUnsafeOption, TransformerConfig[DefaultValuesC, EnableUnsafeOption]]]
-//}
 
 trait ConfigDsl[CC[_ <: TransformerCfg], C <: TransformerCfg] {
 

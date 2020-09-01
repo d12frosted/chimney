@@ -47,15 +47,10 @@ object TransformerF {
     * @tparam To   type of output value
     * @return [[io.scalaland.chimney.dsl.TransformerFDefinition]] with defaults
     */
-  def define[F[+_], From, To]: TransformerFDefinition[
+  def define[F[+_], From, To]: TransformerFDefinition[F, From, To, DefaultTransformerConfig, TransformerCfg.WrapperType[
     F,
-    From,
-    To,
-    EnableDefaultValues,
-    DisableUnsafeOption,
-    DefaultTransformerConfig,
-    TransformerCfg.WrapperType[F, TransformerCfg.Empty]
-  ] =
+    TransformerCfg.Empty
+  ]] =
     new TransformerFDefinition(Map.empty, Map.empty)
 
 }

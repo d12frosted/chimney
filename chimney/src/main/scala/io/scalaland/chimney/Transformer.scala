@@ -40,22 +40,8 @@ object Transformer {
     * @tparam To type of output value
     * @return [[io.scalaland.chimney.dsl.TransformerDefinition]] with defaults
     */
-  def define[From, To]: TransformerDefinition[
-    From,
-    To,
-    EnableDefaultValues,
-    DisableUnsafeOption,
-    DefaultTransformerConfig,
-    TransformerCfg.Empty
-  ] =
-    new TransformerDefinition[
-      From,
-      To,
-      EnableDefaultValues,
-      DisableUnsafeOption,
-      DefaultTransformerConfig,
-      TransformerCfg.Empty
-    ](Map.empty, Map.empty)
+  def define[From, To]: TransformerDefinition[From, To, DefaultTransformerConfig, TransformerCfg.Empty] =
+    new TransformerDefinition[From, To, DefaultTransformerConfig, TransformerCfg.Empty](Map.empty, Map.empty)
 
   /** Creates an empty [[io.scalaland.chimney.dsl.TransformerFDefinition]] that
     * you can customize to derive [[io.scalaland.chimney.TransformerF]].
@@ -71,8 +57,6 @@ object Transformer {
     F,
     From,
     To,
-    EnableDefaultValues,
-    DisableUnsafeOption,
     DefaultTransformerConfig,
     TransformerCfg.WrapperType[F, TransformerCfg.Empty]
   ] =
