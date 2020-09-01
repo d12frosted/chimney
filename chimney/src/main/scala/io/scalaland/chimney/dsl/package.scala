@@ -12,39 +12,6 @@ package object dsl {
   implicit val transformerConfig: Evidence[DefaultTransformerConfig] =
     TransformerConfig.provide(TransformerConfig.default)
 
-  // TODO cleanup instances
-  implicit def defaultValuesE[V0 <: DefaultValues]: DefaultValuesExtractor.Aux[TransformerConfig[V0, _], V0] =
-    new DefaultValuesExtractor[TransformerConfig[V0, _]] {
-      type V = V0
-    }
-
-  implicit def defaultDefaultValuesE: DefaultValuesExtractor.Aux[DefaultTransformerConfig, EnableDefaultValues] =
-    new DefaultValuesExtractor[DefaultTransformerConfig] {
-      type V = EnableDefaultValues
-    }
-
-  implicit def unsafeOptionE[V0 <: UnsafeOption]: UnsafeOptionExtractor.Aux[TransformerConfig[_, V0], V0] =
-    new UnsafeOptionExtractor[TransformerConfig[_, V0]] {
-      type V = V0
-    }
-
-  implicit def defaultUnsafeOptionE: UnsafeOptionExtractor.Aux[DefaultTransformerConfig, DisableUnsafeOption] =
-    new UnsafeOptionExtractor[DefaultTransformerConfig] {
-      type V = DisableUnsafeOption
-    }
-
-  implicit def enableUnsafeOptionE
-      : UnsafeOptionExtractor.Aux[TransformerConfig[_, EnableUnsafeOption], EnableUnsafeOption] =
-    new UnsafeOptionExtractor[TransformerConfig[_, EnableUnsafeOption]] {
-      type V = EnableUnsafeOption
-    }
-
-  implicit def disableUnsafeOptionE
-      : UnsafeOptionExtractor.Aux[TransformerConfig[_, DisableUnsafeOption], DisableUnsafeOption] =
-    new UnsafeOptionExtractor[TransformerConfig[_, DisableUnsafeOption]] {
-      type V = DisableUnsafeOption
-    }
-
   /** Provides transformer operations on values of any type.
     *
     * @param source wrapped source value
