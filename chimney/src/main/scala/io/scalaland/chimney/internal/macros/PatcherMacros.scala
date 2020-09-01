@@ -1,7 +1,7 @@
 package io.scalaland.chimney.internal.macros
 
 import io.scalaland.chimney.internal.utils.{DerivationGuards, EitherUtils, MacroUtils}
-import io.scalaland.chimney.internal.{DerivationError, PatcherConfiguration}
+import io.scalaland.chimney.internal.{DerivationError, PatcherConfiguration, TransformerOptions}
 
 import scala.reflect.macros.blackbox
 
@@ -85,6 +85,7 @@ trait PatcherMacros extends PatcherConfiguration {
     def patchField = q"$fnPatch.${pParam.name}"
     def entityField = q"$fnObj.${pParam.name}"
 
+    val options = TransformerOptions(processDefaultValues = true, enableUnsafeOption = false)
     val patchParamTpe = pParam.resultTypeIn(Patch)
 
     tParamsByName.get(pParam.name) match {
@@ -94,7 +95,7 @@ trait PatcherMacros extends PatcherConfiguration {
           if (patchParamTpe <:< tParamTpe) {
             Right(q"$patchField.orElse($entityField)")
           } else {
-            expandTransformerTree(patchField, TransformerConfig())(
+            expandTransformerTree(patchField, TransformerConfig(options))(
               patchParamTpe,
               tParamTpe
             ).mapRight { transformerTree =>
@@ -107,13 +108,13 @@ trait PatcherMacros extends PatcherConfiguration {
         Some(Right(patchField))
       case Some(tParam) =>
         Some(
-          expandTransformerTree(patchField, TransformerConfig())(
+          expandTransformerTree(patchField, TransformerConfig(options))(
             patchParamTpe,
             tParam.resultTypeIn(T)
           ).left
             .flatMap { errors =>
               if (isOption(patchParamTpe)) {
-                expandTransformerTree(q"$patchField.get", TransformerConfig())(
+                expandTransformerTree(q"$patchField.get", TransformerConfig(options))(
                   patchParamTpe.typeArgs.head,
                   tParam.resultTypeIn(T)
                 ).mapRight { innerTransformerTree =>
