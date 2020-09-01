@@ -20,10 +20,7 @@ import scala.language.experimental.macros
   * @tparam To   type of output value
   * @tparam C    type-level encoded config
   */
-final class TransformerFDefinition[F[+_], From, To, DefaultValuesC <: DefaultValues, UnsafeOptionC <: UnsafeOption, Config <: TransformerConfig[
-  DefaultValuesC,
-  UnsafeOptionC
-], C <: TransformerCfg](
+final class TransformerFDefinition[F[+_], From, To, DefaultValuesC <: DefaultValues, UnsafeOptionC <: UnsafeOption, Config <: TransformerConfig.Type, C <: TransformerCfg](
     val overrides: Map[String, Any],
     val instances: Map[(String, String), Any]
 ) extends ConfigDsl[Lambda[

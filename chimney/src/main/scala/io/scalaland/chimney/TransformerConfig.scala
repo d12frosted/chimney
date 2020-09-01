@@ -13,9 +13,17 @@ sealed trait DefaultValues
 final class EnableDefaultValues extends DefaultValues
 final class DisableDefaultValues extends DefaultValues
 
+trait DefaultValuesExtractor[C] {
+  type V
+}
+
 sealed trait UnsafeOption
 final class EnableUnsafeOption extends UnsafeOption
 final class DisableUnsafeOption extends UnsafeOption
+
+trait UnsafeOptionExtractor[C] {
+  type V
+}
 
 sealed trait MethodAccessors
 final class EnableMethodAccessors extends MethodAccessors
@@ -36,6 +44,34 @@ final class TransformerConfig[DefaultValuesC <: DefaultValues, UnsafeOptionC <: 
 }
 
 object TransformerConfig {
+  type DefaultValuesAux[C, V0] = DefaultValuesExtractor[C] {
+    type V = V0
+  }
+
+  type UnsafeOptionAux[C, V0] = UnsafeOptionExtractor[C] {
+    type V = V0
+  }
+
+  implicit def unsafeOptionE[C <: UnsafeOption]: UnsafeOptionAux[TransformerConfig[_, C], C] =
+    new UnsafeOptionExtractor[TransformerConfig[_, C]] {
+      type V = C
+    }
+
+  implicit def defaultUnsafeOptionE: UnsafeOptionAux[DefaultType, DisableUnsafeOption] =
+    new UnsafeOptionExtractor[DefaultType] {
+      type V = DisableUnsafeOption
+    }
+
+  implicit def enableUnsafeOptionE: UnsafeOptionAux[TransformerConfig[_, EnableUnsafeOption], EnableUnsafeOption] =
+    new UnsafeOptionExtractor[TransformerConfig[_, EnableUnsafeOption]] {
+      type V = EnableUnsafeOption
+    }
+
+  implicit def disableUnsafeOptionE: UnsafeOptionAux[TransformerConfig[_, DisableUnsafeOption], DisableUnsafeOption] =
+    new UnsafeOptionExtractor[TransformerConfig[_, DisableUnsafeOption]] {
+      type V = DisableUnsafeOption
+    }
+
   type Type = TransformerConfig[_ <: DefaultValues, _ <: UnsafeOption]
   type Builder[DefaultValuesC <: DefaultValues, UnsafeOptionC <: UnsafeOption] =
     TransformerConfig[DefaultValuesC, UnsafeOptionC]

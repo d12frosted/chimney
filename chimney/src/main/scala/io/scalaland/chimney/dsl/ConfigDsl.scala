@@ -1,5 +1,6 @@
 package io.scalaland.chimney.dsl
 
+import io.scalaland.chimney.TransformerConfig.UnsafeOptionAux
 import io.scalaland.chimney.{
   DefaultValues,
   DisableDefaultValues,
@@ -17,9 +18,15 @@ import io.scalaland.chimney.internal.TransformerCfg.{
   EnableOptionDefaultsToNone
 }
 
+trait DasConfigDsl[CC[_ <: TransformerConfig.Type], C <: TransformerConfig.Type] {
+  def disableDefaultValues2[UnsafeOptionC <: UnsafeOption](
+      implicit f: UnsafeOptionAux[C, UnsafeOptionC]
+  ): CC[TransformerConfig[DisableDefaultValues, UnsafeOptionC]] =
+    this.asInstanceOf[CC[TransformerConfig[DisableDefaultValues, UnsafeOptionC]]]
+}
+
 // TODO: documentation
 trait AConfigDsl[CC[_ <: DefaultValues, _ <: UnsafeOption], DefaultValuesC <: DefaultValues, UnsafeOptionC <: UnsafeOption] {
-
   def disableDefaultValues: CC[DisableDefaultValues, UnsafeOptionC] =
     this.asInstanceOf[CC[DisableDefaultValues, UnsafeOptionC]]
 

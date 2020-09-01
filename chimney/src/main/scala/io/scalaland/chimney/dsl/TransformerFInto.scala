@@ -6,10 +6,7 @@ import io.scalaland.chimney.internal.macros.{ChimneyBlackboxMacros, TransformerF
 
 import scala.language.experimental.macros
 
-final class TransformerFInto[F[+_], From, To, DefaultValuesC <: DefaultValues, UnsafeOptionC <: UnsafeOption, Config <: TransformerConfig[
-  DefaultValuesC,
-  UnsafeOptionC
-], C <: TransformerCfg](
+final class TransformerFInto[F[+_], From, To, DefaultValuesC <: DefaultValues, UnsafeOptionC <: UnsafeOption, Config <: TransformerConfig.Type, C <: TransformerCfg](
     val source: From,
     val td: TransformerFDefinition[F, From, To, DefaultValuesC, UnsafeOptionC, Config, C]
 ) extends ConfigDsl[Lambda[
