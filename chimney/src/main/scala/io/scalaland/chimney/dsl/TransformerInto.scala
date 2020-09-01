@@ -1,14 +1,6 @@
 package io.scalaland.chimney.dsl
 
-import io.scalaland.chimney.TransformerConfig.Type
-import io.scalaland.chimney.{
-  DefaultValues,
-  DisableDefaultValues,
-  EnableUnsafeOption,
-  Evidence,
-  TransformerConfig,
-  UnsafeOption
-}
+import io.scalaland.chimney.TransformerConfig
 import io.scalaland.chimney.internal.TransformerCfg
 import io.scalaland.chimney.internal.TransformerCfg.WrapperType
 import io.scalaland.chimney.internal.macros.{ChimneyBlackboxMacros, TransformerIntoWhiteboxMacros}
@@ -22,6 +14,7 @@ import scala.language.experimental.macros
   * @param  td     transformer definition
   * @tparam From   type of input value
   * @tparam To     type of output value
+  * @tparam Config type-level encoded config
   * @tparam C      type-level encoded config
   */
 final class TransformerInto[From, To, Config <: TransformerConfig.Type, C <: TransformerCfg](
