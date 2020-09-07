@@ -23,13 +23,13 @@ object DefaultValuesExtractor {
     type V = V0
   }
 
-  implicit def defaultValuesE[V0 <: DefaultValues]: Aux[TransformerConfig[V0, _], V0] =
-    new DefaultValuesExtractor[TransformerConfig[V0, _]] {
+  implicit def defaultValuesE[V0 <: DefaultValues]: Aux[TransformerFlags[V0, _], V0] =
+    new DefaultValuesExtractor[TransformerFlags[V0, _]] {
       type V = V0
     }
 
-  implicit def defaultDefaultValuesE: Aux[TransformerConfig.DefaultType, EnableDefaultValues] =
-    new DefaultValuesExtractor[TransformerConfig.DefaultType] {
+  implicit def defaultDefaultValuesE: Aux[TransformerFlags.DefaultType, EnableDefaultValues] =
+    new DefaultValuesExtractor[TransformerFlags.DefaultType] {
       type V = EnableDefaultValues
     }
 }
@@ -47,13 +47,13 @@ object UnsafeOptionExtractor {
     type V = V0
   }
 
-  implicit def unsafeOptionE[V0 <: UnsafeOption]: Aux[TransformerConfig[_, V0], V0] =
-    new UnsafeOptionExtractor[TransformerConfig[_, V0]] {
+  implicit def unsafeOptionE[V0 <: UnsafeOption]: Aux[TransformerFlags[_, V0], V0] =
+    new UnsafeOptionExtractor[TransformerFlags[_, V0]] {
       type V = V0
     }
 
-  implicit def defaultUnsafeOptionE: Aux[TransformerConfig.DefaultType, DisableUnsafeOption] =
-    new UnsafeOptionExtractor[TransformerConfig.DefaultType] {
+  implicit def defaultUnsafeOptionE: Aux[TransformerFlags.DefaultType, DisableUnsafeOption] =
+    new UnsafeOptionExtractor[TransformerFlags.DefaultType] {
       type V = DisableUnsafeOption
     }
 }
@@ -62,27 +62,27 @@ sealed trait MethodAccessors
 final class EnableMethodAccessors extends MethodAccessors
 final class DisableMethodAccessors extends MethodAccessors
 
-final class TransformerConfig[DefaultValuesC <: DefaultValues, UnsafeOptionC <: UnsafeOption] {
-  def enableDefaultValues: TransformerConfig[EnableDefaultValues, UnsafeOptionC] =
-    new TransformerConfig[EnableDefaultValues, UnsafeOptionC]
+final class TransformerFlags[DefaultValuesC <: DefaultValues, UnsafeOptionC <: UnsafeOption] {
+  def enableDefaultValues: TransformerFlags[EnableDefaultValues, UnsafeOptionC] =
+    new TransformerFlags[EnableDefaultValues, UnsafeOptionC]
 
-  def disableDefaultValues: TransformerConfig[DisableDefaultValues, UnsafeOptionC] =
-    new TransformerConfig[DisableDefaultValues, UnsafeOptionC]
+  def disableDefaultValues: TransformerFlags[DisableDefaultValues, UnsafeOptionC] =
+    new TransformerFlags[DisableDefaultValues, UnsafeOptionC]
 
-  def enableUnsafeOption: TransformerConfig[DefaultValuesC, EnableUnsafeOption] =
-    new TransformerConfig[DefaultValuesC, EnableUnsafeOption]
+  def enableUnsafeOption: TransformerFlags[DefaultValuesC, EnableUnsafeOption] =
+    new TransformerFlags[DefaultValuesC, EnableUnsafeOption]
 
-  def disableUnsafeOption: TransformerConfig[DefaultValuesC, DisableUnsafeOption] =
-    new TransformerConfig[DefaultValuesC, DisableUnsafeOption]
+  def disableUnsafeOption: TransformerFlags[DefaultValuesC, DisableUnsafeOption] =
+    new TransformerFlags[DefaultValuesC, DisableUnsafeOption]
 }
 
-object TransformerConfig {
-  type Type = TransformerConfig[_ <: DefaultValues, _ <: UnsafeOption]
+object TransformerFlags {
+  type Type = TransformerFlags[_ <: DefaultValues, _ <: UnsafeOption]
   type Builder[DefaultValuesC <: DefaultValues, UnsafeOptionC <: UnsafeOption] =
-    TransformerConfig[DefaultValuesC, UnsafeOptionC]
+    TransformerFlags[DefaultValuesC, UnsafeOptionC]
 
-  type DefaultType = TransformerConfig[EnableDefaultValues, DisableUnsafeOption]
-  val default = new TransformerConfig[EnableDefaultValues, DisableUnsafeOption]
+  type DefaultType = TransformerFlags[EnableDefaultValues, DisableUnsafeOption]
+  val default = new TransformerFlags[EnableDefaultValues, DisableUnsafeOption]
 
   def provide[C <: Type](config: C): Evidence[C] =
     new Evidence[C] {
@@ -90,7 +90,7 @@ object TransformerConfig {
     }
 }
 
-trait TransformerConfiguration extends MacroUtils {
+trait TransformerFlagsMaterialization extends MacroUtils {
   val c: blackbox.Context
 
   import c.universe._

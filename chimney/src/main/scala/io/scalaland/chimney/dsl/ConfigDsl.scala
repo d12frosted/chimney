@@ -9,7 +9,7 @@ import io.scalaland.chimney.internal.TransformerCfg.{
 }
 import io.scalaland.chimney._
 
-trait AConfigDsl[CC[_ <: TransformerConfig.Type], C <: TransformerConfig.Type] {
+trait AConfigDsl[CC[_ <: TransformerFlags.Type], C <: TransformerFlags.Type] {
 
   /** Fail derivation if `From` type is missing field even if `To` has default value for it.
     *
@@ -19,8 +19,8 @@ trait AConfigDsl[CC[_ <: TransformerConfig.Type], C <: TransformerConfig.Type] {
     */
   def disableDefaultValues[UnsafeOptionC <: UnsafeOption](
       implicit f: UnsafeOptionExtractor.Aux[C, UnsafeOptionC]
-  ): CC[TransformerConfig[DisableDefaultValues, UnsafeOptionC]] =
-    this.asInstanceOf[CC[TransformerConfig[DisableDefaultValues, UnsafeOptionC]]]
+  ): CC[TransformerFlags[DisableDefaultValues, UnsafeOptionC]] =
+    this.asInstanceOf[CC[TransformerFlags[DisableDefaultValues, UnsafeOptionC]]]
 
   /** Use default value of field in `To` if field is missing in `From`.
     *
@@ -30,8 +30,8 @@ trait AConfigDsl[CC[_ <: TransformerConfig.Type], C <: TransformerConfig.Type] {
     */
   def enableDefaultValues[UnsafeOptionC <: UnsafeOption](
       implicit f: UnsafeOptionExtractor.Aux[C, UnsafeOptionC]
-  ): CC[TransformerConfig[EnableDefaultValues, UnsafeOptionC]] =
-    this.asInstanceOf[CC[TransformerConfig[EnableDefaultValues, UnsafeOptionC]]]
+  ): CC[TransformerFlags[EnableDefaultValues, UnsafeOptionC]] =
+    this.asInstanceOf[CC[TransformerFlags[EnableDefaultValues, UnsafeOptionC]]]
 
   /** Disable unsafe call to `.get` when source type From contains field of type `Option[A]`,
     * but target type To defines this fields as `A`.
@@ -42,8 +42,8 @@ trait AConfigDsl[CC[_ <: TransformerConfig.Type], C <: TransformerConfig.Type] {
     */
   def disableUnsafeOption[DefaultValuesC <: DefaultValues](
       implicit f: DefaultValuesExtractor.Aux[C, DefaultValuesC]
-  ): CC[TransformerConfig[DefaultValuesC, DisableUnsafeOption]] =
-    this.asInstanceOf[CC[TransformerConfig[DefaultValuesC, DisableUnsafeOption]]]
+  ): CC[TransformerFlags[DefaultValuesC, DisableUnsafeOption]] =
+    this.asInstanceOf[CC[TransformerFlags[DefaultValuesC, DisableUnsafeOption]]]
 
   /** Enable unsafe call to `.get` when source type From contains field of type `Option[A]`,
     * but target type To defines this fields as `A`.
@@ -56,8 +56,8 @@ trait AConfigDsl[CC[_ <: TransformerConfig.Type], C <: TransformerConfig.Type] {
     */
   def enableUnsafeOption[DefaultValuesC <: DefaultValues](
       implicit f: DefaultValuesExtractor.Aux[C, DefaultValuesC]
-  ): CC[TransformerConfig[DefaultValuesC, EnableUnsafeOption]] =
-    this.asInstanceOf[CC[TransformerConfig[DefaultValuesC, EnableUnsafeOption]]]
+  ): CC[TransformerFlags[DefaultValuesC, EnableUnsafeOption]] =
+    this.asInstanceOf[CC[TransformerFlags[DefaultValuesC, EnableUnsafeOption]]]
 }
 
 trait ConfigDsl[CC[_ <: TransformerCfg], C <: TransformerCfg] {

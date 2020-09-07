@@ -1,19 +1,13 @@
 package io.scalaland.chimney.internal.macros
 
-import io.scalaland.chimney.{
-  DisableDefaultValues,
-  DisableUnsafeOption,
-  EnableDefaultValues,
-  EnableUnsafeOption,
-  TransformerConfiguration => Configuration
-}
+import io.scalaland.chimney.TransformerFlagsMaterialization
 import io.scalaland.chimney.internal._
 import io.scalaland.chimney.internal.utils.{DerivationGuards, EitherUtils, MacroUtils}
 
 import scala.reflect.macros.blackbox
 
 trait TransformerMacros
-    extends Configuration
+    extends TransformerFlagsMaterialization
     with TransformerConfiguration
     with MappingMacros
     with TargetConstructorMacros {

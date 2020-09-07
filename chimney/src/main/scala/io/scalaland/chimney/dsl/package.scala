@@ -8,9 +8,9 @@ import scala.language.experimental.macros
   */
 package object dsl {
 
-  type DefaultTransformerConfig = TransformerConfig.DefaultType
-  implicit val transformerConfig: Evidence[DefaultTransformerConfig] =
-    TransformerConfig.provide(TransformerConfig.default)
+  type DefaultTransformerFlags = TransformerFlags.DefaultType
+  implicit val transformerFlags: Evidence[DefaultTransformerFlags] =
+    TransformerFlags.provide(TransformerFlags.default)
 
   /** Provides transformer operations on values of any type.
     *
@@ -24,10 +24,10 @@ package object dsl {
       * @tparam To target type
       * @return [[io.scalaland.chimney.dsl.TransformerInto]]
       */
-    final def into[To]: TransformerInto[From, To, DefaultTransformerConfig, TransformerCfg.Empty] = {
+    final def into[To]: TransformerInto[From, To, DefaultTransformerFlags, TransformerCfg.Empty] = {
       new TransformerInto(
         source,
-        new TransformerDefinition[From, To, DefaultTransformerConfig, TransformerCfg.Empty](Map.empty, Map.empty)
+        new TransformerDefinition[From, To, DefaultTransformerFlags, TransformerCfg.Empty](Map.empty, Map.empty)
       )
     }
 
@@ -54,14 +54,14 @@ package object dsl {
       * @return [[io.scalaland.chimney.dsl.TransformerFInto]]
       */
     final def intoF[F[+_], To]
-        : TransformerFInto[F, From, To, DefaultTransformerConfig, TransformerCfg.WrapperType[F, TransformerCfg.Empty]] =
+        : TransformerFInto[F, From, To, DefaultTransformerFlags, TransformerCfg.WrapperType[F, TransformerCfg.Empty]] =
       new TransformerFInto(
         source,
         new TransformerFDefinition[
           F,
           From,
           To,
-          DefaultTransformerConfig,
+          DefaultTransformerFlags,
           TransformerCfg.WrapperType[F, TransformerCfg.Empty]
         ](
           Map.empty,
