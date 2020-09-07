@@ -48,7 +48,7 @@ object TransformerF {
     * @return [[io.scalaland.chimney.dsl.TransformerFDefinition]] with defaults
     */
   def define[F[+_], From, To]
-      : TransformerFDefinition[F, From, To, TransformerCfg.WrapperType[F, TransformerCfg.Empty]] =
+      : TransformerFDefinition[F, From, To, TransformerCfg.WrapperType[F, TransformerCfg.Empty], TransformerFlags.Default] =
     new TransformerFDefinition(Map.empty, Map.empty)
 
 }

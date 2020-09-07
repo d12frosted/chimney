@@ -1,7 +1,7 @@
 package io.scalaland.chimney
 
 import io.scalaland.chimney.internal.TransformerCfg
-import io.scalaland.chimney.dsl.{TransformerFDefinition, TransformerDefinition}
+import io.scalaland.chimney.dsl.{TransformerDefinition, TransformerFDefinition}
 import io.scalaland.chimney.internal.macros.ChimneyBlackboxMacros
 
 import scala.language.experimental.macros
@@ -26,8 +26,8 @@ object Transformer {
     * @tparam To type of output value
     * @return [[io.scalaland.chimney.Transformer]] type class definition
     */
-  implicit def derive[From, To]: Transformer[From, To] =
-    macro ChimneyBlackboxMacros.deriveTransformerImpl[From, To]
+  implicit def derive[From, To, Flags](implicit flags: TransformerFlags[Flags]): Transformer[From, To] =
+    macro ChimneyBlackboxMacros.deriveTransformerImpl[From, To, Flags]
 
   /** Creates an empty [[io.scalaland.chimney.dsl.TransformerDefinition]] that
     * you can customize to derive [[io.scalaland.chimney.Transformer]].
@@ -38,8 +38,8 @@ object Transformer {
     * @tparam To type of output value
     * @return [[io.scalaland.chimney.dsl.TransformerDefinition]] with defaults
     */
-  def define[From, To]: TransformerDefinition[From, To, TransformerCfg.Empty] =
-    new TransformerDefinition[From, To, TransformerCfg.Empty](Map.empty, Map.empty)
+  def define[From, To]: TransformerDefinition[From, To, TransformerCfg.Empty, TransformerFlags.Default] =
+    new TransformerDefinition[From, To, TransformerCfg.Empty, TransformerFlags.Default](Map.empty, Map.empty)
 
   /** Creates an empty [[io.scalaland.chimney.dsl.TransformerFDefinition]] that
     * you can customize to derive [[io.scalaland.chimney.TransformerF]].
@@ -52,6 +52,6 @@ object Transformer {
     * @return [[io.scalaland.chimney.dsl.TransformerFDefinition]] with defaults
     */
   def defineF[F[+_], From, To]
-      : TransformerFDefinition[F, From, To, TransformerCfg.WrapperType[F, TransformerCfg.Empty]] =
+      : TransformerFDefinition[F, From, To, TransformerCfg.WrapperType[F, TransformerCfg.Empty], TransformerFlags.Default] =
     TransformerF.define[F, From, To]
 }

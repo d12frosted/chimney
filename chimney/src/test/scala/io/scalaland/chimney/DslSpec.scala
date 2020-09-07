@@ -8,6 +8,15 @@ object DslSpec extends TestSuite {
 
   val tests = Tests {
 
+    "allow to change defaults" - {
+      case class UserDomain(name: String, age: Option[Int])
+      case class UserDto(name: String, age: Int)
+
+      implicit val transformerFlags = TransformerFlags.empty.enableDefaultValues.enableUnsafeOption
+
+      UserDomain("Batman", Some(42)).transformInto[UserDto] ==> UserDto("Batman", 42)
+    }
+
     "use implicit transformer directly" - {
 
       import Domain1._
@@ -915,7 +924,7 @@ object DslSpec extends TestSuite {
       }
 
       "generated automatically" - {
-        implicit def fooToBarTransformer: Transformer[Foo, Bar] = Transformer.derive[Foo, Bar]
+        implicit def fooToBarTransformer: Transformer[Foo, Bar] = Transformer.derive[Foo, Bar, TransformerFlags.Default]
 
         Foo(Some(Foo(None))).transformInto[Bar] ==> Bar(Some(Bar(None)))
       }
@@ -926,7 +935,8 @@ object DslSpec extends TestSuite {
         case class Bar1(x: Int, foo: Baz[Bar1])
         case class Bar2(foo: Baz[Bar2])
 
-        implicit def bar1ToBar2Transformer: Transformer[Bar1, Bar2] = Transformer.derive[Bar1, Bar2]
+        implicit def bar1ToBar2Transformer: Transformer[Bar1, Bar2] =
+          Transformer.derive[Bar1, Bar2, TransformerFlags.Default]
 
         Bar1(1, Baz(Some(Bar1(2, Baz(None))))).transformInto[Bar2] ==> Bar2(Baz(Some(Bar2(Baz(None)))))
       }

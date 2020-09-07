@@ -121,7 +121,7 @@ trait MappingMacros extends Model with TransformerConfiguration {
 
     val fallbackTransformers = targets.flatMap { target =>
       def defaultValueFallback =
-        if (config.processDefaultValues && To.isCaseClass) {
+        if (config.options.processDefaultValues && To.isCaseClass) {
           targetCaseClassDefaults
             .get(target.name)
             .map(defaultValueTree => target -> TransformerBodyTree(defaultValueTree, isWrapped = false))

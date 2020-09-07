@@ -8,6 +8,9 @@ import scala.language.experimental.macros
   */
 package object dsl {
 
+  implicit val transformerFlags: TransformerFlags[TransformerFlags.Default] =
+    TransformerFlags.empty.enableDefaultValues
+
   /** Provides transformer operations on values of any type.
     *
     * @param source wrapped source value
@@ -20,8 +23,11 @@ package object dsl {
       * @tparam To target type
       * @return [[io.scalaland.chimney.dsl.TransformerInto]]
       */
-    final def into[To]: TransformerInto[From, To, TransformerCfg.Empty] =
-      new TransformerInto(source, new TransformerDefinition[From, To, TransformerCfg.Empty](Map.empty, Map.empty))
+    final def into[To]: TransformerInto[From, To, TransformerCfg.Empty, TransformerFlags.Default] =
+      new TransformerInto(
+        source,
+        new TransformerDefinition[From, To, TransformerCfg.Empty, TransformerFlags.Default](Map.empty, Map.empty)
+      )
 
     /** Performs in-place transformation of captured source value to target type.
       *
@@ -45,10 +51,17 @@ package object dsl {
       * @tparam To target type
       * @return [[io.scalaland.chimney.dsl.TransformerFInto]]
       */
-    final def intoF[F[+_], To]: TransformerFInto[F, From, To, TransformerCfg.WrapperType[F, TransformerCfg.Empty]] =
+    final def intoF[F[+_], To]
+        : TransformerFInto[F, From, To, TransformerCfg.WrapperType[F, TransformerCfg.Empty], TransformerFlags.Default] =
       new TransformerFInto(
         source,
-        new TransformerFDefinition[F, From, To, TransformerCfg.WrapperType[F, TransformerCfg.Empty]](
+        new TransformerFDefinition[
+          F,
+          From,
+          To,
+          TransformerCfg.WrapperType[F, TransformerCfg.Empty],
+          TransformerFlags.Default
+        ](
           Map.empty,
           Map.empty
         )

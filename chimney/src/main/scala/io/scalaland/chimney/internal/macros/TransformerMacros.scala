@@ -1,22 +1,29 @@
 package io.scalaland.chimney.internal.macros
 
+import io.scalaland.chimney.TransformerFlagsSupport
 import io.scalaland.chimney.internal._
 import io.scalaland.chimney.internal.utils.{DerivationGuards, EitherUtils, MacroUtils}
 
 import scala.reflect.macros.blackbox
 
-trait TransformerMacros extends TransformerConfiguration with MappingMacros with TargetConstructorMacros {
+trait TransformerMacros
+    extends TransformerConfiguration
+    with TransformerFlagsSupport
+    with MappingMacros
+    with TargetConstructorMacros {
   this: DerivationGuards with MacroUtils with EitherUtils =>
 
   val c: blackbox.Context
 
   import c.universe._
 
-  def buildDefinedTransformer[From: WeakTypeTag, To: WeakTypeTag, C: WeakTypeTag](
+  def buildDefinedTransformer[From: WeakTypeTag, To: WeakTypeTag, C: WeakTypeTag, Flags: WeakTypeTag](
       tfsTree: Tree = EmptyTree
   ): Tree = {
+    val Flags = weakTypeOf[Flags]
     val C = weakTypeOf[C]
-    val config = captureTransformerConfig(C).copy(
+    val options = materialize(Flags)
+    val config = captureTransformerConfig(options, C).copy(
       definitionScope = Some((weakTypeOf[From], weakTypeOf[To])),
       wrapperSupportInstance = tfsTree
     )
@@ -34,12 +41,14 @@ trait TransformerMacros extends TransformerConfiguration with MappingMacros with
     }
   }
 
-  def expandTransform[From: WeakTypeTag, To: WeakTypeTag, C: WeakTypeTag](
+  def expandTransform[From: WeakTypeTag, To: WeakTypeTag, C: WeakTypeTag, Flags: WeakTypeTag](
       tfsTree: Tree = EmptyTree
   ): Tree = {
+    val Flags = weakTypeOf[Flags].dealias
     val C = weakTypeOf[C]
     val tiName = TermName(c.freshName("ti"))
-    val config = captureTransformerConfig(C)
+    val options = materialize(Flags)
+    val config = captureTransformerConfig(options, C)
       .copy(
         transformerDefinitionPrefix = q"$tiName.td",
         wrapperSupportInstance = tfsTree
@@ -125,7 +134,7 @@ trait TransformerMacros extends TransformerConfiguration with MappingMacros with
       expandOptions(srcPrefixTree, config)(From, To)
     } else if (isOption(To)) {
       expandTargetWrappedInOption(srcPrefixTree, config)(From, To)
-    } else if (config.enableUnsafeOption && isOption(From)) {
+    } else if (config.options.enableUnsafeOption && isOption(From)) {
       expandSourceWrappedInOption(srcPrefixTree, config)(From, To)
     } else if (bothEithers(From, To)) {
       expandEithers(srcPrefixTree, config)(From, To)
