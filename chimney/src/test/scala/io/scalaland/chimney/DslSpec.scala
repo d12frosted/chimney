@@ -927,7 +927,7 @@ object DslSpec extends TestSuite {
       }
 
       "generated automatically" - {
-        implicit def fooToBarTransformer: Transformer[Foo, Bar] = Transformer.derive[Foo, Bar, DefaultTransformerConfig]
+        implicit def fooToBarTransformer: Transformer[Foo, Bar] = Transformer.derive[Foo, Bar, DefaultTransformerFlags]
 
         Foo(Some(Foo(None))).transformInto[Bar] ==> Bar(Some(Bar(None)))
       }
@@ -939,7 +939,7 @@ object DslSpec extends TestSuite {
         case class Bar2(foo: Baz[Bar2])
 
         implicit def bar1ToBar2Transformer: Transformer[Bar1, Bar2] =
-          Transformer.derive[Bar1, Bar2, DefaultTransformerConfig]
+          Transformer.derive[Bar1, Bar2, DefaultTransformerFlags]
 
         Bar1(1, Baz(Some(Bar1(2, Baz(None))))).transformInto[Bar2] ==> Bar2(Baz(Some(Bar2(Baz(None)))))
       }

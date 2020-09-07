@@ -1,6 +1,6 @@
 package io.scalaland.chimney.dsl
 
-import io.scalaland.chimney.TransformerConfig
+import io.scalaland.chimney.TransformerFlags
 import io.scalaland.chimney.internal.TransformerCfg
 import io.scalaland.chimney.internal.TransformerCfg.WrapperType
 import io.scalaland.chimney.internal.macros.{ChimneyBlackboxMacros, TransformerIntoWhiteboxMacros}
@@ -11,17 +11,17 @@ import scala.language.experimental.macros
   * generation and using the result to transform value at the same time
   *
   * @param  source object to transform
-  * @param  td     transformer definition
-  * @tparam From   type of input value
-  * @tparam To     type of output value
-  * @tparam Config type-level encoded config
-  * @tparam C      type-level encoded config
+  * @param  td    transformer definition
+  * @tparam From  type of input value
+  * @tparam To    type of output value
+  * @tparam Flags type-level encoded flags
+  * @tparam C     type-level encoded config
   */
-final class TransformerInto[From, To, Config <: TransformerConfig.Type, C <: TransformerCfg](
+final class TransformerInto[From, To, Flags <: TransformerFlags.Type, C <: TransformerCfg](
     val source: From,
-    val td: TransformerDefinition[From, To, Config, C]
-) extends ConfigDsl[Lambda[`C1 <: TransformerCfg` => TransformerInto[From, To, Config, C1]], C]
-    with AConfigDsl[Lambda[`Config1 <: TransformerConfig.Type` => TransformerInto[From, To, Config1, C]], Config] {
+    val td: TransformerDefinition[From, To, Flags, C]
+) extends ConfigDsl[Lambda[`C1 <: TransformerCfg` => TransformerInto[From, To, Flags, C1]], C]
+    with AConfigDsl[Lambda[`Flags1 <: TransformerFlags.Type` => TransformerInto[From, To, Flags1, C]], Flags] {
 
   /** Lifts current transformation with provided type constructor `F`.
     *
@@ -31,8 +31,8 @@ final class TransformerInto[From, To, Config <: TransformerConfig.Type, C <: Tra
     * @tparam F    wrapper type constructor
     * @return [[io.scalaland.chimney.dsl.TransformerFInto]]
     */
-  def lift[F[+_]]: TransformerFInto[F, From, To, Config, WrapperType[F, C]] =
-    new TransformerFInto[F, From, To, Config, WrapperType[F, C]](
+  def lift[F[+_]]: TransformerFInto[F, From, To, Flags, WrapperType[F, C]] =
+    new TransformerFInto[F, From, To, Flags, WrapperType[F, C]](
       source,
       td.lift[F]
     )
@@ -47,7 +47,7 @@ final class TransformerInto[From, To, Config <: TransformerConfig.Type, C <: Tra
   def withFieldConst[T, U](
       selector: To => T,
       value: U
-  ): TransformerInto[From, To, Config, _ <: TransformerCfg] =
+  ): TransformerInto[From, To, Flags, _ <: TransformerCfg] =
     macro TransformerIntoWhiteboxMacros.withFieldConstImpl
 
   /** Use wrapped `value` provided here for field picked using `selector`.
@@ -62,7 +62,7 @@ final class TransformerInto[From, To, Config <: TransformerConfig.Type, C <: Tra
   def withFieldConstF[F[+_], T, U](
       selector: To => T,
       value: F[U]
-  ): TransformerFInto[F, From, To, Config, _ <: TransformerCfg] =
+  ): TransformerFInto[F, From, To, Flags, _ <: TransformerCfg] =
     macro TransformerIntoWhiteboxMacros.withFieldConstFImpl[F]
 
   /** Use `map` provided here to compute value of field picked using `selector`.
@@ -77,7 +77,7 @@ final class TransformerInto[From, To, Config <: TransformerConfig.Type, C <: Tra
   def withFieldComputed[T, U](
       selector: To => T,
       map: From => U
-  ): TransformerInto[From, To, Config, _ <: TransformerCfg] =
+  ): TransformerInto[From, To, Flags, _ <: TransformerCfg] =
     macro TransformerIntoWhiteboxMacros.withFieldComputedImpl
 
   /** Use `map` provided here to compute wrapped value of field picked using `selector`.
@@ -92,7 +92,7 @@ final class TransformerInto[From, To, Config <: TransformerConfig.Type, C <: Tra
   def withFieldComputedF[F[+_], T, U](
       selector: To => T,
       map: From => F[U]
-  ): TransformerFInto[F, From, To, Config, _ <: TransformerCfg] =
+  ): TransformerFInto[F, From, To, Flags, _ <: TransformerCfg] =
     macro TransformerIntoWhiteboxMacros.withFieldComputedFImpl[F]
 
   /** Use `selectorFrom` field in `From` to obtain the value of `selectorTo` field in `To`
@@ -107,7 +107,7 @@ final class TransformerInto[From, To, Config <: TransformerConfig.Type, C <: Tra
   def withFieldRenamed[T, U](
       selectorFrom: From => T,
       selectorTo: To => U
-  ): TransformerInto[From, To, Config, _ <: TransformerCfg] =
+  ): TransformerInto[From, To, Flags, _ <: TransformerCfg] =
     macro TransformerIntoWhiteboxMacros.withFieldRenamedImpl
 
   /** Use `f` to calculate the (missing) coproduct instance when mapping one coproduct into another
@@ -123,7 +123,7 @@ final class TransformerInto[From, To, Config <: TransformerConfig.Type, C <: Tra
     */
   def withCoproductInstance[Inst](
       f: Inst => To
-  ): TransformerInto[From, To, Config, _ <: TransformerCfg] =
+  ): TransformerInto[From, To, Flags, _ <: TransformerCfg] =
     macro TransformerIntoWhiteboxMacros.withCoproductInstanceImpl
 
   /** Use `f` to calculate the (missing) wrapped coproduct instance when mapping one coproduct into another
@@ -139,7 +139,7 @@ final class TransformerInto[From, To, Config <: TransformerConfig.Type, C <: Tra
     */
   def withCoproductInstanceF[F[+_], Inst](
       f: Inst => F[To]
-  ): TransformerFInto[F, From, To, Config, _ <: TransformerCfg] =
+  ): TransformerFInto[F, From, To, Flags, _ <: TransformerCfg] =
     macro TransformerIntoWhiteboxMacros.withCoproductInstanceFImpl[F]
 
   /** Apply configured transformation in-place.
@@ -151,13 +151,13 @@ final class TransformerInto[From, To, Config <: TransformerConfig.Type, C <: Tra
     * @return transformed value of type `To`
     */
   def transform: To =
-    macro ChimneyBlackboxMacros.transformImpl[From, To, Config, C]
+    macro ChimneyBlackboxMacros.transformImpl[From, To, Flags, C]
 
   /** Used internally by macro. Please don't use in your code.
     */
   def __refineTransformerDefinition[C1 <: TransformerCfg](
-      f: TransformerDefinition[From, To, Config, C] => TransformerDefinition[From, To, Config, C1]
-  ): TransformerInto[From, To, Config, C1] =
-    new TransformerInto[From, To, Config, C1](source, f(td))
+      f: TransformerDefinition[From, To, Flags, C] => TransformerDefinition[From, To, Flags, C1]
+  ): TransformerInto[From, To, Flags, C1] =
+    new TransformerInto[From, To, Flags, C1](source, f(td))
 
 }

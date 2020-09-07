@@ -179,7 +179,7 @@ object IssuesSpec extends TestSuite {
       "fix 'wrong forward reference' when assigning .derive to local transformer instance" - {
         case class Bar(a: String, b: Int)
 
-        implicit val fooBarTransformer: Transformer[Foo, Bar] = Transformer.derive[Foo, Bar, DefaultTransformerConfig]
+        implicit val fooBarTransformer: Transformer[Foo, Bar] = Transformer.derive[Foo, Bar, DefaultTransformerFlags]
 
         Foo("a", 1, 3).transformInto[Bar] ==> Bar("a", 1)
       }
@@ -189,7 +189,7 @@ object IssuesSpec extends TestSuite {
 
         object TransformerInstances {
           implicit val fooBarTransformer: Transformer[Foo, Bar] =
-            Transformer.derive[Foo, Bar, DefaultTransformerConfig]
+            Transformer.derive[Foo, Bar, DefaultTransformerFlags]
         }
 
         import TransformerInstances._

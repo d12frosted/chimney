@@ -1,6 +1,6 @@
 package io.scalaland.chimney
 
-import io.scalaland.chimney.dsl.{DefaultTransformerConfig, TransformerFDefinition}
+import io.scalaland.chimney.dsl.{DefaultTransformerFlags, TransformerFDefinition}
 import io.scalaland.chimney.internal.TransformerCfg
 import io.scalaland.chimney.internal.macros.ChimneyBlackboxMacros
 
@@ -29,17 +29,17 @@ object TransformerF {
     *
     * When transformation can't be derived, it results with compilation error.
     *
-    * @tparam F      wrapper type constructor
-    * @tparam From   type of input value
-    * @tparam To     type of output value
-    * @tparam Config configuration of derived transformer
+    * @tparam F     wrapper type constructor
+    * @tparam From  type of input value
+    * @tparam To    type of output value
+    * @tparam Flags configuration flags of derived transformer
     * @return [[io.scalaland.chimney.TransformerF]] type class definition
     */
-  implicit def derive[F[+_], From, To, Config <: TransformerConfig.Type](
+  implicit def derive[F[+_], From, To, Flags <: TransformerFlags.Type](
       implicit tfs: TransformerFSupport[F],
-      config: Evidence[Config]
+      config: Evidence[Flags]
   ): TransformerF[F, From, To] =
-    macro ChimneyBlackboxMacros.deriveTransformerFImpl[F, From, To, Config]
+    macro ChimneyBlackboxMacros.deriveTransformerFImpl[F, From, To, Flags]
 
   /** Creates an empty [[io.scalaland.chimney.dsl.TransformerFDefinition]] that
     * you can customize to derive [[io.scalaland.chimney.TransformerF]].
@@ -51,7 +51,7 @@ object TransformerF {
     * @tparam To   type of output value
     * @return [[io.scalaland.chimney.dsl.TransformerFDefinition]] with defaults
     */
-  def define[F[+_], From, To]: TransformerFDefinition[F, From, To, DefaultTransformerConfig, TransformerCfg.WrapperType[
+  def define[F[+_], From, To]: TransformerFDefinition[F, From, To, DefaultTransformerFlags, TransformerCfg.WrapperType[
     F,
     TransformerCfg.Empty
   ]] =

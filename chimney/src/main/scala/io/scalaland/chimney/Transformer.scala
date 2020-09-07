@@ -1,6 +1,6 @@
 package io.scalaland.chimney
 
-import io.scalaland.chimney.dsl.{DefaultTransformerConfig, TransformerDefinition, TransformerFDefinition}
+import io.scalaland.chimney.dsl.{DefaultTransformerFlags, TransformerDefinition, TransformerFDefinition}
 import io.scalaland.chimney.internal.TransformerCfg
 import io.scalaland.chimney.internal.macros.ChimneyBlackboxMacros
 
@@ -24,13 +24,13 @@ object Transformer {
     *
     * @tparam From type of input value
     * @tparam To type of output value
-    * @tparam Config configuration of derived transformer
+    * @tparam Flags configuration flags of derived transformer
     * @return [[io.scalaland.chimney.Transformer]] type class definition
     */
-  implicit def derive[From, To, Config <: TransformerConfig.Type](
-      implicit config: Evidence[Config]
+  implicit def derive[From, To, Flags <: TransformerFlags.Type](
+      implicit config: Evidence[Flags]
   ): Transformer[From, To] =
-    macro ChimneyBlackboxMacros.deriveTransformerImpl[From, To, Config]
+    macro ChimneyBlackboxMacros.deriveTransformerImpl[From, To, Flags]
 
   /** Creates an empty [[io.scalaland.chimney.dsl.TransformerDefinition]] that
     * you can customize to derive [[io.scalaland.chimney.Transformer]].
@@ -41,8 +41,8 @@ object Transformer {
     * @tparam To type of output value
     * @return [[io.scalaland.chimney.dsl.TransformerDefinition]] with defaults
     */
-  def define[From, To]: TransformerDefinition[From, To, DefaultTransformerConfig, TransformerCfg.Empty] =
-    new TransformerDefinition[From, To, DefaultTransformerConfig, TransformerCfg.Empty](Map.empty, Map.empty)
+  def define[From, To]: TransformerDefinition[From, To, DefaultTransformerFlags, TransformerCfg.Empty] =
+    new TransformerDefinition[From, To, DefaultTransformerFlags, TransformerCfg.Empty](Map.empty, Map.empty)
 
   /** Creates an empty [[io.scalaland.chimney.dsl.TransformerFDefinition]] that
     * you can customize to derive [[io.scalaland.chimney.TransformerF]].
@@ -58,7 +58,7 @@ object Transformer {
     F,
     From,
     To,
-    DefaultTransformerConfig,
+    DefaultTransformerFlags,
     TransformerCfg.WrapperType[F, TransformerCfg.Empty]
   ] =
     TransformerF.define[F, From, To]
