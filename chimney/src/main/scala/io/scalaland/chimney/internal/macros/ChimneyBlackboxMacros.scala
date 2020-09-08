@@ -45,7 +45,8 @@ class ChimneyBlackboxMacros(val c: blackbox.Context)
   }
 
   def deriveTransformerImpl[From: WeakTypeTag, To: WeakTypeTag, Flags: WeakTypeTag](
-      config: c.Expr[Flags]
+      evidence: c.Tree,
+      flags: c.Expr[Flags]
   ): c.Expr[chimney.Transformer[From, To]] = {
     val flagsTpe = weakTypeOf[Flags].dealias
     val options = materialize(flagsTpe)
@@ -59,14 +60,15 @@ class ChimneyBlackboxMacros(val c: blackbox.Context)
     }
   }
 
-  def deriveTransformerFImpl[F[+_], From: WeakTypeTag, To: WeakTypeTag, O: WeakTypeTag](
+  def deriveTransformerFImpl[F[+_], From: WeakTypeTag, To: WeakTypeTag, Flags: WeakTypeTag](
+      evidence: c.Tree,
       tfs: c.Expr[TransformerFSupport[F]],
-      config: c.Expr[O]
+      flags: c.Expr[Flags]
   )(
       implicit F: WeakTypeTag[F[_]]
   ): c.Expr[TransformerF[F, From, To]] = {
-    val optionsTpe = weakTypeOf[O].dealias
-    val options = materialize(optionsTpe)
+    val flagsTpe = weakTypeOf[Flags].dealias
+    val options = materialize(flagsTpe)
     c.Expr[TransformerF[F, From, To]](
       genTransformer[From, To](
         TransformerConfig(

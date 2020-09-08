@@ -9,8 +9,8 @@ import scala.language.experimental.macros
 package object dsl {
 
   type DefaultTransformerFlags = TransformerFlags.DefaultType
-  implicit val transformerFlags: Evidence[DefaultTransformerFlags] =
-    TransformerFlags.provide(TransformerFlags.default)
+
+  implicit val transformerFlags: DefaultTransformerFlags = TransformerFlags.default
 
   /** Provides transformer operations on values of any type.
     *
