@@ -10,45 +10,34 @@ trait Evidence[C] {
   def value: C
 }
 
+trait Extractor[C] {
+  type V
+}
+
+object Extractor {
+  type Aux[C, V0] = Extractor[C] {
+    type V = V0
+  }
+
+  private def extractor[C, V0]: Aux[C, V0] =
+    new Extractor[C] {
+      type V = V0
+    }
+
+  implicit def defaultValuesE[DefaultValuesC <: DefaultValues, UnsafeOptionC <: UnsafeOption]
+      : Extractor.Aux[TransformerFlags[DefaultValuesC, UnsafeOptionC], DefaultValuesC] = Extractor.extractor
+
+  implicit def unsafeOptionE[DefaultValuesC <: DefaultValues, UnsafeOptionC <: UnsafeOption]
+      : Extractor.Aux[TransformerFlags[DefaultValuesC, UnsafeOptionC], UnsafeOptionC] = Extractor.extractor
+}
+
 sealed trait DefaultValues
 final class EnableDefaultValues extends DefaultValues
 final class DisableDefaultValues extends DefaultValues
 
-trait DefaultValuesExtractor[C] {
-  type V
-}
-
-object DefaultValuesExtractor {
-  type Aux[C, V0] = DefaultValuesExtractor[C] {
-    type V = V0
-  }
-
-  implicit def defaultValuesE[DefaultValuesC <: DefaultValues, UnsafeOptionC <: UnsafeOption]
-      : Aux[TransformerFlags[DefaultValuesC, UnsafeOptionC], DefaultValuesC] =
-    new DefaultValuesExtractor[TransformerFlags[DefaultValuesC, UnsafeOptionC]] {
-      type V = DefaultValuesC
-    }
-}
-
 sealed trait UnsafeOption
 final class EnableUnsafeOption extends UnsafeOption
 final class DisableUnsafeOption extends UnsafeOption
-
-trait UnsafeOptionExtractor[C] {
-  type V
-}
-
-object UnsafeOptionExtractor {
-  type Aux[C, V0] = UnsafeOptionExtractor[C] {
-    type V = V0
-  }
-
-  implicit def unsafeOptionE[DefaultValuesC <: DefaultValues, UnsafeOptionC <: UnsafeOption]
-      : Aux[TransformerFlags[DefaultValuesC, UnsafeOptionC], UnsafeOptionC] =
-    new UnsafeOptionExtractor[TransformerFlags[DefaultValuesC, UnsafeOptionC]] {
-      type V = UnsafeOptionC
-    }
-}
 
 sealed trait MethodAccessors
 final class EnableMethodAccessors extends MethodAccessors

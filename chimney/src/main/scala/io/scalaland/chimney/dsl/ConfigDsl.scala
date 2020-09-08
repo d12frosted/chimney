@@ -18,7 +18,7 @@ trait AConfigDsl[CC[_ <: TransformerFlags.Type], C <: TransformerFlags.Type] {
     * @see [[https://scalalandio.github.io/chimney/transformers/default-values.html#disabling-default-values-in-generated-transformer]] for more details
     */
   def disableDefaultValues[UnsafeOptionC <: UnsafeOption](
-      implicit f: UnsafeOptionExtractor.Aux[C, UnsafeOptionC]
+      implicit f: Extractor.Aux[C, UnsafeOptionC]
   ): CC[TransformerFlags[DisableDefaultValues, UnsafeOptionC]] =
     this.asInstanceOf[CC[TransformerFlags[DisableDefaultValues, UnsafeOptionC]]]
 
@@ -29,7 +29,7 @@ trait AConfigDsl[CC[_ <: TransformerFlags.Type], C <: TransformerFlags.Type] {
     * @see [[https://scalalandio.github.io/chimney/transformers/default-values.html#disabling-default-values-in-generated-transformer]] for more details
     */
   def enableDefaultValues[UnsafeOptionC <: UnsafeOption](
-      implicit f: UnsafeOptionExtractor.Aux[C, UnsafeOptionC]
+      implicit f: Extractor.Aux[C, UnsafeOptionC]
   ): CC[TransformerFlags[EnableDefaultValues, UnsafeOptionC]] =
     this.asInstanceOf[CC[TransformerFlags[EnableDefaultValues, UnsafeOptionC]]]
 
@@ -41,7 +41,7 @@ trait AConfigDsl[CC[_ <: TransformerFlags.Type], C <: TransformerFlags.Type] {
     * @see [[https://scalalandio.github.io/chimney/transformers/unsafe-options.html]] for more details
     */
   def disableUnsafeOption[DefaultValuesC <: DefaultValues](
-      implicit f: DefaultValuesExtractor.Aux[C, DefaultValuesC]
+      implicit f: Extractor.Aux[C, DefaultValuesC]
   ): CC[TransformerFlags[DefaultValuesC, DisableUnsafeOption]] =
     this.asInstanceOf[CC[TransformerFlags[DefaultValuesC, DisableUnsafeOption]]]
 
@@ -55,7 +55,7 @@ trait AConfigDsl[CC[_ <: TransformerFlags.Type], C <: TransformerFlags.Type] {
     * @see [[https://scalalandio.github.io/chimney/transformers/unsafe-options.html]] for more details
     */
   def enableUnsafeOption[DefaultValuesC <: DefaultValues](
-      implicit f: DefaultValuesExtractor.Aux[C, DefaultValuesC]
+      implicit f: Extractor.Aux[C, DefaultValuesC]
   ): CC[TransformerFlags[DefaultValuesC, EnableUnsafeOption]] =
     this.asInstanceOf[CC[TransformerFlags[DefaultValuesC, EnableUnsafeOption]]]
 }
