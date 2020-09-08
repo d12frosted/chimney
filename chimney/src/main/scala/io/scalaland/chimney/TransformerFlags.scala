@@ -23,14 +23,10 @@ object DefaultValuesExtractor {
     type V = V0
   }
 
-  implicit def defaultValuesE[V0 <: DefaultValues]: Aux[TransformerFlags[V0, _], V0] =
-    new DefaultValuesExtractor[TransformerFlags[V0, _]] {
-      type V = V0
-    }
-
-  implicit def defaultDefaultValuesE: Aux[TransformerFlags.DefaultType, EnableDefaultValues] =
-    new DefaultValuesExtractor[TransformerFlags.DefaultType] {
-      type V = EnableDefaultValues
+  implicit def defaultValuesE[DefaultValuesC <: DefaultValues, UnsafeOptionC <: UnsafeOption]
+      : Aux[TransformerFlags[DefaultValuesC, UnsafeOptionC], DefaultValuesC] =
+    new DefaultValuesExtractor[TransformerFlags[DefaultValuesC, UnsafeOptionC]] {
+      type V = DefaultValuesC
     }
 }
 
@@ -47,14 +43,10 @@ object UnsafeOptionExtractor {
     type V = V0
   }
 
-  implicit def unsafeOptionE[V0 <: UnsafeOption]: Aux[TransformerFlags[_, V0], V0] =
-    new UnsafeOptionExtractor[TransformerFlags[_, V0]] {
-      type V = V0
-    }
-
-  implicit def defaultUnsafeOptionE: Aux[TransformerFlags.DefaultType, DisableUnsafeOption] =
-    new UnsafeOptionExtractor[TransformerFlags.DefaultType] {
-      type V = DisableUnsafeOption
+  implicit def unsafeOptionE[DefaultValuesC <: DefaultValues, UnsafeOptionC <: UnsafeOption]
+      : Aux[TransformerFlags[DefaultValuesC, UnsafeOptionC], UnsafeOptionC] =
+    new UnsafeOptionExtractor[TransformerFlags[DefaultValuesC, UnsafeOptionC]] {
+      type V = UnsafeOptionC
     }
 }
 
