@@ -6,10 +6,6 @@ import io.scalaland.chimney.internal.utils.MacroUtils
 import scala.language.existentials
 import scala.reflect.macros.blackbox
 
-trait Evidence[C] {
-  def value: C
-}
-
 trait Extractor[C] {
   type V
 }
@@ -64,11 +60,6 @@ object TransformerFlags {
 
   type DefaultType = TransformerFlags[EnableDefaultValues, DisableUnsafeOption]
   val default = new TransformerFlags[EnableDefaultValues, DisableUnsafeOption]
-
-  def provide[C <: Type](config: C): Evidence[C] =
-    new Evidence[C] {
-      override def value: C = config
-    }
 }
 
 trait TransformerFlagsMaterialization extends MacroUtils {

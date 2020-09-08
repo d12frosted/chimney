@@ -5,6 +5,7 @@ import io.scalaland.chimney.internal.TransformerCfg
 import io.scalaland.chimney.internal.macros.ChimneyBlackboxMacros
 
 import scala.language.experimental.macros
+import scala.reflect.runtime.universe.TypeTag
 
 /** Type class expressing total transformation between
   * source type `From` and target type `To`.
@@ -27,8 +28,8 @@ object Transformer {
     * @tparam Flags configuration flags of derived transformer
     * @return [[io.scalaland.chimney.Transformer]] type class definition
     */
-  implicit def derive[From, To, Flags <: TransformerFlags.Type](
-      implicit config: Evidence[Flags]
+  implicit def derive[From, To, Flags <: TransformerFlags.Type: TypeTag](
+      implicit flags: Flags
   ): Transformer[From, To] =
     macro ChimneyBlackboxMacros.deriveTransformerImpl[From, To, Flags]
 
