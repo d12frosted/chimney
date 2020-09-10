@@ -1,6 +1,6 @@
 package io.scalaland.chimney
 
-import io.scalaland.chimney.dsl.{DefaultTransformerFlags, TransformerDefinition, TransformerFDefinition}
+import io.scalaland.chimney.dsl.{TransformerDefinition, TransformerFDefinition}
 import io.scalaland.chimney.internal.TransformerCfg
 import io.scalaland.chimney.internal.macros.ChimneyBlackboxMacros
 
@@ -42,8 +42,20 @@ object Transformer {
     * @tparam To type of output value
     * @return [[io.scalaland.chimney.dsl.TransformerDefinition]] with defaults
     */
-  def define[From, To]: TransformerDefinition[From, To, DefaultTransformerFlags, TransformerCfg.Empty] =
-    new TransformerDefinition[From, To, DefaultTransformerFlags, TransformerCfg.Empty](Map.empty, Map.empty)
+  def define[From, To]: TransformerDefinition[
+    From,
+    To,
+    TransformerCfg.Empty,
+    TransformerFlags.DefaultValues,
+    TransformerFlags.UnsafeOption
+  ] =
+    new TransformerDefinition[
+      From,
+      To,
+      TransformerCfg.Empty,
+      TransformerFlags.DefaultValues,
+      TransformerFlags.UnsafeOption
+    ](Map.empty, Map.empty)
 
   /** Creates an empty [[io.scalaland.chimney.dsl.TransformerFDefinition]] that
     * you can customize to derive [[io.scalaland.chimney.TransformerF]].
@@ -59,8 +71,9 @@ object Transformer {
     F,
     From,
     To,
-    DefaultTransformerFlags,
-    TransformerCfg.WrapperType[F, TransformerCfg.Empty]
+    TransformerCfg.WrapperType[F, TransformerCfg.Empty],
+    TransformerFlags.DefaultValues,
+    TransformerFlags.UnsafeOption
   ] =
     TransformerF.define[F, From, To]
 }

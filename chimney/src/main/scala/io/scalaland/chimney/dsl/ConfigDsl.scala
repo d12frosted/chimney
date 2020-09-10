@@ -9,7 +9,7 @@ import io.scalaland.chimney.internal.TransformerCfg.{
 }
 import io.scalaland.chimney._
 
-trait AConfigDsl[CC[_ <: TransformerFlags.Type], C <: TransformerFlags.Type] {
+trait AConfigDsl[CC[_, _], DefaultValues, UnsafeOption] {
 
   /** Fail derivation if `From` type is missing field even if `To` has default value for it.
     *
@@ -17,10 +17,8 @@ trait AConfigDsl[CC[_ <: TransformerFlags.Type], C <: TransformerFlags.Type] {
     *
     * @see [[https://scalalandio.github.io/chimney/transformers/default-values.html#disabling-default-values-in-generated-transformer]] for more details
     */
-  def disableDefaultValues[UnsafeOptionC <: UnsafeOption](
-      implicit f: Extractor.Aux[C, UnsafeOptionC]
-  ): CC[TransformerFlags[DisableDefaultValues, UnsafeOptionC]] =
-    this.asInstanceOf[CC[TransformerFlags[DisableDefaultValues, UnsafeOptionC]]]
+  def disableDefaultValues: CC[DisableDefaultValues, UnsafeOption] =
+    this.asInstanceOf[CC[DisableDefaultValues, UnsafeOption]]
 
   /** Use default value of field in `To` if field is missing in `From`.
     *
@@ -28,10 +26,8 @@ trait AConfigDsl[CC[_ <: TransformerFlags.Type], C <: TransformerFlags.Type] {
     *
     * @see [[https://scalalandio.github.io/chimney/transformers/default-values.html#disabling-default-values-in-generated-transformer]] for more details
     */
-  def enableDefaultValues[UnsafeOptionC <: UnsafeOption](
-      implicit f: Extractor.Aux[C, UnsafeOptionC]
-  ): CC[TransformerFlags[EnableDefaultValues, UnsafeOptionC]] =
-    this.asInstanceOf[CC[TransformerFlags[EnableDefaultValues, UnsafeOptionC]]]
+  def enableDefaultValues: CC[EnableDefaultValues, UnsafeOption] =
+    this.asInstanceOf[CC[EnableDefaultValues, UnsafeOption]]
 
   /** Disable unsafe call to `.get` when source type From contains field of type `Option[A]`,
     * but target type To defines this fields as `A`.
@@ -40,10 +36,8 @@ trait AConfigDsl[CC[_ <: TransformerFlags.Type], C <: TransformerFlags.Type] {
     *
     * @see [[https://scalalandio.github.io/chimney/transformers/unsafe-options.html]] for more details
     */
-  def disableUnsafeOption[DefaultValuesC <: DefaultValues](
-      implicit f: Extractor.Aux[C, DefaultValuesC]
-  ): CC[TransformerFlags[DefaultValuesC, DisableUnsafeOption]] =
-    this.asInstanceOf[CC[TransformerFlags[DefaultValuesC, DisableUnsafeOption]]]
+  def disableUnsafeOption: CC[DefaultValues, DisableUnsafeOption] =
+    this.asInstanceOf[CC[DefaultValues, DisableUnsafeOption]]
 
   /** Enable unsafe call to `.get` when source type From contains field of type `Option[A]`,
     * but target type To defines this fields as `A`.
@@ -54,10 +48,8 @@ trait AConfigDsl[CC[_ <: TransformerFlags.Type], C <: TransformerFlags.Type] {
     *
     * @see [[https://scalalandio.github.io/chimney/transformers/unsafe-options.html]] for more details
     */
-  def enableUnsafeOption[DefaultValuesC <: DefaultValues](
-      implicit f: Extractor.Aux[C, DefaultValuesC]
-  ): CC[TransformerFlags[DefaultValuesC, EnableUnsafeOption]] =
-    this.asInstanceOf[CC[TransformerFlags[DefaultValuesC, EnableUnsafeOption]]]
+  def enableUnsafeOption: CC[DefaultValues, EnableUnsafeOption] =
+    this.asInstanceOf[CC[DefaultValues, EnableUnsafeOption]]
 }
 
 trait ConfigDsl[CC[_ <: TransformerCfg], C <: TransformerCfg] {

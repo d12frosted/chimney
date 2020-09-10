@@ -14,11 +14,15 @@ import scala.language.experimental.macros
   * @tparam Flags type-level encoded flags
   * @tparam C     type-level encoded config
   */
-final class TransformerDefinition[From, To, Flags <: TransformerFlags.Type, C <: TransformerCfg](
+final class TransformerDefinition[From, To, C <: TransformerCfg, DefaultValues, UnsafeOption](
     val overrides: Map[String, Any],
     val instances: Map[(String, String), Any]
-) extends ConfigDsl[Lambda[`C1 <: TransformerCfg` => TransformerDefinition[From, To, Flags, C1]], C]
-    with AConfigDsl[Lambda[`Flags1 <: TransformerFlags.Type` => TransformerDefinition[From, To, Flags1, C]], Flags] {
+) extends ConfigDsl[Lambda[
+      `C1 <: TransformerCfg` => TransformerDefinition[From, To, C1, DefaultValues, UnsafeOption]
+    ], C]
+    with AConfigDsl[Lambda[
+      (DefaultValues1, UnsafeOption1) => TransformerDefinition[From, To, C, DefaultValues1, UnsafeOption1]
+    ], DefaultValues, UnsafeOption] {
 
   /** Lifts current transformer definition with provided type constructor `F`.
     *
@@ -28,8 +32,8 @@ final class TransformerDefinition[From, To, Flags <: TransformerFlags.Type, C <:
     * @tparam F    wrapper type constructor
     * @return [[io.scalaland.chimney.dsl.TransformerFDefinition]]
     */
-  def lift[F[+_]]: TransformerFDefinition[F, From, To, Flags, WrapperType[F, C]] =
-    new TransformerFDefinition[F, From, To, Flags, WrapperType[F, C]](
+  def lift[F[+_]]: TransformerFDefinition[F, From, To, WrapperType[F, C], DefaultValues, UnsafeOption] =
+    new TransformerFDefinition[F, From, To, WrapperType[F, C], DefaultValues, UnsafeOption](
       overrides,
       instances
     )
@@ -46,7 +50,7 @@ final class TransformerDefinition[From, To, Flags <: TransformerFlags.Type, C <:
   def withFieldConst[T, U](
       selector: To => T,
       value: U
-  ): TransformerDefinition[From, To, Flags, _ <: TransformerCfg] =
+  ): TransformerDefinition[From, To, _ <: TransformerCfg, DefaultValues, UnsafeOption] =
     macro TransformerDefinitionWhiteboxMacros.withFieldConstImpl[From, To, T, U, C]
 
   /** Use wrapped `value` provided here for field picked using `selector`.
@@ -61,7 +65,7 @@ final class TransformerDefinition[From, To, Flags <: TransformerFlags.Type, C <:
   def withFieldConstF[F[+_], T, U](
       selector: To => T,
       value: F[U]
-  ): TransformerFDefinition[F, From, To, Flags, _ <: TransformerCfg] =
+  ): TransformerFDefinition[F, From, To, _ <: TransformerCfg, DefaultValues, UnsafeOption] =
     macro TransformerDefinitionWhiteboxMacros.withFieldConstFImpl[F]
 
   /** Use `map` provided here to compute value of field picked using `selector`.
@@ -76,7 +80,7 @@ final class TransformerDefinition[From, To, Flags <: TransformerFlags.Type, C <:
   def withFieldComputed[T, U](
       selector: To => T,
       map: From => U
-  ): TransformerDefinition[From, To, Flags, _ <: TransformerCfg] =
+  ): TransformerDefinition[From, To, _ <: TransformerCfg, DefaultValues, UnsafeOption] =
     macro TransformerDefinitionWhiteboxMacros.withFieldComputedImpl[From, To, T, U, C]
 
   /** Use `map` provided here to compute wrapped value of field picked using `selector`.
@@ -91,7 +95,7 @@ final class TransformerDefinition[From, To, Flags <: TransformerFlags.Type, C <:
   def withFieldComputedF[F[+_], T, U](
       selector: To => T,
       map: From => F[U]
-  ): TransformerFDefinition[F, From, To, Flags, _ <: TransformerCfg] =
+  ): TransformerFDefinition[F, From, To, _ <: TransformerCfg, DefaultValues, UnsafeOption] =
     macro TransformerDefinitionWhiteboxMacros.withFieldComputedFImpl[F]
 
   /** Use `selectorFrom` field in `From` to obtain the value of `selectorTo` field in `To`
@@ -106,7 +110,7 @@ final class TransformerDefinition[From, To, Flags <: TransformerFlags.Type, C <:
   def withFieldRenamed[T, U](
       selectorFrom: From => T,
       selectorTo: To => U
-  ): TransformerDefinition[From, To, Flags, _ <: TransformerCfg] =
+  ): TransformerDefinition[From, To, _ <: TransformerCfg, DefaultValues, UnsafeOption] =
     macro TransformerDefinitionWhiteboxMacros.withFieldRenamedImpl[From, To, T, U, C]
 
   /** Use `f` to calculate the (missing) coproduct instance when mapping one coproduct into another.
@@ -122,7 +126,7 @@ final class TransformerDefinition[From, To, Flags <: TransformerFlags.Type, C <:
     */
   def withCoproductInstance[Inst](
       f: Inst => To
-  ): TransformerDefinition[From, To, Flags, _ <: TransformerCfg] =
+  ): TransformerDefinition[From, To, _ <: TransformerCfg, DefaultValues, UnsafeOption] =
     macro TransformerDefinitionWhiteboxMacros.withCoproductInstanceImpl[From, To, Inst, C]
 
   /** Use `f` to calculate the (missing) wrapped coproduct instance when mapping one coproduct into another
@@ -138,7 +142,7 @@ final class TransformerDefinition[From, To, Flags <: TransformerFlags.Type, C <:
     */
   def withCoproductInstanceF[F[+_], Inst](
       f: Inst => F[To]
-  ): TransformerFDefinition[F, From, To, Flags, _ <: TransformerCfg] =
+  ): TransformerFDefinition[F, From, To, _ <: TransformerCfg, DefaultValues, UnsafeOption] =
     macro TransformerDefinitionWhiteboxMacros.withCoproductInstanceFImpl[F, From, To, Inst, C]
 
   /** Build Transformer using current configuration.
@@ -149,19 +153,19 @@ final class TransformerDefinition[From, To, Flags <: TransformerFlags.Type, C <:
     * @return [[io.scalaland.chimney.Transformer]] type class instance
     */
   def buildTransformer: Transformer[From, To] =
-    macro ChimneyBlackboxMacros.buildTransformerImpl[From, To, Flags, C]
+    macro ChimneyBlackboxMacros.buildTransformerImpl[From, To, C, TransformerFlags[DefaultValues, UnsafeOption]]
 
   /** Used internally by macro. Please don't use in your code.
     */
-  def __refineConfig[C1 <: TransformerCfg]: TransformerDefinition[From, To, Flags, C1] =
-    this.asInstanceOf[TransformerDefinition[From, To, Flags, C1]]
+  def __refineConfig[C1 <: TransformerCfg]: TransformerDefinition[From, To, C1, DefaultValues, UnsafeOption] =
+    this.asInstanceOf[TransformerDefinition[From, To, C1, DefaultValues, UnsafeOption]]
 
   /** Used internally by macro. Please don't use in your code.
     */
   def __addOverride(
       key: String,
       value: Any
-  ): TransformerDefinition[From, To, Flags, C] =
+  ): TransformerDefinition[From, To, C, DefaultValues, UnsafeOption] =
     new TransformerDefinition(overrides.updated(key, value), instances)
 
   /** Used internally by macro. Please don't use in your code.
@@ -170,7 +174,7 @@ final class TransformerDefinition[From, To, Flags <: TransformerFlags.Type, C <:
       from: String,
       to: String,
       value: Any
-  ): TransformerDefinition[From, To, Flags, C] =
+  ): TransformerDefinition[From, To, C, DefaultValues, UnsafeOption] =
     new TransformerDefinition(overrides, instances.updated((from, to), value))
 
 }

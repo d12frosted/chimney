@@ -17,13 +17,13 @@ trait TransformerMacros
 
   import c.universe._
 
-  def buildDefinedTransformer[From: WeakTypeTag, To: WeakTypeTag, O: WeakTypeTag, C: WeakTypeTag](
+  def buildDefinedTransformer[From: WeakTypeTag, To: WeakTypeTag, C: WeakTypeTag, Flags: WeakTypeTag](
       tfsTree: Tree = EmptyTree
   ): Tree = {
-    val O = weakTypeOf[O].dealias
+    val Flags = weakTypeOf[Flags].dealias
     val C = weakTypeOf[C]
-    val options = materialize(O)
-    val config = captureTransformerConfig(options, C).copy(
+    val flags = materialize(Flags)
+    val config = captureTransformerConfig(flags, C).copy(
       definitionScope = Some((weakTypeOf[From], weakTypeOf[To])),
       wrapperSupportInstance = tfsTree
     )
@@ -41,14 +41,14 @@ trait TransformerMacros
     }
   }
 
-  def expandTransform[From: WeakTypeTag, To: WeakTypeTag, O: WeakTypeTag, C: WeakTypeTag](
+  def expandTransform[From: WeakTypeTag, To: WeakTypeTag, C: WeakTypeTag, Flags: WeakTypeTag](
       tfsTree: Tree = EmptyTree
   ): Tree = {
-    val O = weakTypeOf[O].dealias
+    val Flags = weakTypeOf[Flags].dealias
     val C = weakTypeOf[C]
     val tiName = TermName(c.freshName("ti"))
-    val options = materialize(O)
-    val config = captureTransformerConfig(options, C)
+    val flags = materialize(Flags)
+    val config = captureTransformerConfig(flags, C)
       .copy(
         transformerDefinitionPrefix = q"$tiName.td",
         wrapperSupportInstance = tfsTree

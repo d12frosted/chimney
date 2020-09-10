@@ -15,32 +15,32 @@ class ChimneyBlackboxMacros(val c: blackbox.Context)
 
   import c.universe._
 
-  def buildTransformerImpl[From: WeakTypeTag, To: WeakTypeTag, C0: WeakTypeTag, C: WeakTypeTag]
+  def buildTransformerImpl[From: WeakTypeTag, To: WeakTypeTag, C: WeakTypeTag, Flags: WeakTypeTag]
       : c.Expr[chimney.Transformer[From, To]] = {
     c.Expr[chimney.Transformer[From, To]] {
-      buildDefinedTransformer[From, To, C0, C]()
+      buildDefinedTransformer[From, To, C, Flags]()
     }
   }
 
-  def buildTransformerFImpl[F[+_], From: WeakTypeTag, To: WeakTypeTag, Config: WeakTypeTag, C: WeakTypeTag](
+  def buildTransformerFImpl[F[+_], From: WeakTypeTag, To: WeakTypeTag, C: WeakTypeTag, Flags: WeakTypeTag](
       tfs: c.Expr[TransformerFSupport[F]]
   ): c.Expr[TransformerF[F, From, To]] = {
     c.Expr[TransformerF[F, From, To]] {
-      buildDefinedTransformer[From, To, Config, C](tfs.tree)
+      buildDefinedTransformer[From, To, C, Flags](tfs.tree)
     }
   }
 
-  def transformImpl[From: WeakTypeTag, To: WeakTypeTag, C0: WeakTypeTag, C: WeakTypeTag]: c.Expr[To] = {
+  def transformImpl[From: WeakTypeTag, To: WeakTypeTag, C: WeakTypeTag, Flags: WeakTypeTag]: c.Expr[To] = {
     c.Expr[To] {
-      expandTransform[From, To, C0, C]()
+      expandTransform[From, To, C, Flags]()
     }
   }
 
-  def transformFImpl[F[+_], From: WeakTypeTag, To: WeakTypeTag, C0: WeakTypeTag, C: WeakTypeTag](
+  def transformFImpl[F[+_], From: WeakTypeTag, To: WeakTypeTag, C: WeakTypeTag, Flags: WeakTypeTag](
       tfs: c.Expr[TransformerFSupport[F]]
   ): c.Expr[F[To]] = {
     c.Expr[F[To]] {
-      expandTransform[From, To, C0, C](tfs.tree)
+      expandTransform[From, To, C, Flags](tfs.tree)
     }
   }
 
