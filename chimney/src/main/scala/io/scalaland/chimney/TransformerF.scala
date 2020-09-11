@@ -36,7 +36,7 @@ object TransformerF {
     * @tparam Flags configuration flags of derived transformer
     * @return [[io.scalaland.chimney.TransformerF]] type class definition
     */
-  implicit def derive[F[+_], From, To, Flags <: TransformerFlags.Type: TypeTag](
+  implicit def derive[F[+_], From, To, Flags <: TransformerFlags: TypeTag](
       implicit tfs: TransformerFSupport[F],
       flags: Flags
   ): TransformerF[F, From, To] =
@@ -52,10 +52,8 @@ object TransformerF {
     * @tparam To   type of output value
     * @return [[io.scalaland.chimney.dsl.TransformerFDefinition]] with defaults
     */
-  def define[F[+_], From, To]: TransformerFDefinition[F, From, To, TransformerCfg.WrapperType[
-    F,
-    TransformerCfg.Empty
-  ], TransformerFlags.DefaultValues, TransformerFlags.UnsafeOption] =
+  def define[F[+_], From, To]
+      : TransformerFDefinition[F, From, To, TransformerCfg.WrapperType[F, TransformerCfg.Empty], TransformerFlags] =
     new TransformerFDefinition(Map.empty, Map.empty)
 
 }

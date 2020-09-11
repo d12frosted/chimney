@@ -28,7 +28,7 @@ object Transformer {
     * @tparam Flags configuration flags of derived transformer
     * @return [[io.scalaland.chimney.Transformer]] type class definition
     */
-  implicit def derive[From, To, Flags <: TransformerFlags.Type: TypeTag](
+  implicit def derive[From, To, Flags <: TransformerFlags: TypeTag](
       implicit flags: Flags
   ): Transformer[From, To] =
     macro ChimneyBlackboxMacros.deriveTransformerImpl[From, To, Flags]
@@ -42,20 +42,8 @@ object Transformer {
     * @tparam To type of output value
     * @return [[io.scalaland.chimney.dsl.TransformerDefinition]] with defaults
     */
-  def define[From, To]: TransformerDefinition[
-    From,
-    To,
-    TransformerCfg.Empty,
-    TransformerFlags.DefaultValues,
-    TransformerFlags.UnsafeOption
-  ] =
-    new TransformerDefinition[
-      From,
-      To,
-      TransformerCfg.Empty,
-      TransformerFlags.DefaultValues,
-      TransformerFlags.UnsafeOption
-    ](Map.empty, Map.empty)
+  def define[From, To]: TransformerDefinition[From, To, TransformerCfg.Empty, TransformerFlags] =
+    new TransformerDefinition[From, To, TransformerCfg.Empty, TransformerFlags](Map.empty, Map.empty)
 
   /** Creates an empty [[io.scalaland.chimney.dsl.TransformerFDefinition]] that
     * you can customize to derive [[io.scalaland.chimney.TransformerF]].
@@ -67,13 +55,7 @@ object Transformer {
     * @tparam To   type of output value
     * @return [[io.scalaland.chimney.dsl.TransformerFDefinition]] with defaults
     */
-  def defineF[F[+_], From, To]: TransformerFDefinition[
-    F,
-    From,
-    To,
-    TransformerCfg.WrapperType[F, TransformerCfg.Empty],
-    TransformerFlags.DefaultValues,
-    TransformerFlags.UnsafeOption
-  ] =
+  def defineF[F[+_], From, To]
+      : TransformerFDefinition[F, From, To, TransformerCfg.WrapperType[F, TransformerCfg.Empty], TransformerFlags] =
     TransformerF.define[F, From, To]
 }

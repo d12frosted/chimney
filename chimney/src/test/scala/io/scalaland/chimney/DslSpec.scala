@@ -8,6 +8,18 @@ object DslSpec extends TestSuite {
 
   val tests = Tests {
 
+    "allow to override default flags" - {
+      case class UserDomain(name: String)
+      case class UserDto(name: String, age: Int = 42)
+
+      implicit val transformerFlags: TransformerFlags {
+        type DefaultValues = Flags.Disabled
+      } = dsl.transformerFlags.disableDefaultValues
+
+      compileError("""UserDomain("Batman").transformInto[UserDto]""")
+        .check("", "no accessor named age in source type io.scalaland.chimney.DslSpec.UserDomain")
+    }
+
     "use implicit transformer directly" - {
 
       import Domain1._
@@ -927,7 +939,7 @@ object DslSpec extends TestSuite {
       }
 
       "generated automatically" - {
-        implicit def fooToBarTransformer: Transformer[Foo, Bar] = Transformer.derive[Foo, Bar, DefaultTransformerFlags]
+        implicit def fooToBarTransformer: Transformer[Foo, Bar] = Transformer.derive[Foo, Bar, TransformerFlags]
 
         Foo(Some(Foo(None))).transformInto[Bar] ==> Bar(Some(Bar(None)))
       }
@@ -939,12 +951,13 @@ object DslSpec extends TestSuite {
         case class Bar2(foo: Baz[Bar2])
 
         implicit def bar1ToBar2Transformer: Transformer[Bar1, Bar2] =
-          Transformer.derive[Bar1, Bar2, DefaultTransformerFlags]
+          Transformer.derive[Bar1, Bar2, TransformerFlags]
 
         Bar1(1, Baz(Some(Bar1(2, Baz(None))))).transformInto[Bar2] ==> Bar2(Baz(Some(Bar2(Baz(None)))))
       }
     }
   }
+
 }
 
 object Domain1 {

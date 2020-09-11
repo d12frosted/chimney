@@ -6,59 +6,14 @@ import io.scalaland.chimney.internal.utils.MacroUtils
 import scala.language.existentials
 import scala.reflect.macros.blackbox
 
-trait Extractor[C] {
-  type V
+object Flags {
+  final class Enabled
+  final class Disabled
 }
 
-object Extractor {
-  type Aux[C, V0] = Extractor[C] {
-    type V = V0
-  }
-
-  private def extractor[C, V0]: Aux[C, V0] =
-    new Extractor[C] {
-      type V = V0
-    }
-
-  implicit def defaultValuesE[DefaultValues, UnsafeOption]
-      : Extractor.Aux[TransformerFlags[DefaultValues, UnsafeOption], DefaultValues] = Extractor.extractor
-
-  implicit def unsafeOptionE[DefaultValues, UnsafeOption]
-      : Extractor.Aux[TransformerFlags[DefaultValues, UnsafeOption], UnsafeOption] = Extractor.extractor
-}
-
-sealed trait DefaultValuesFlag
-final class EnableDefaultValues extends DefaultValuesFlag
-final class DisableDefaultValues extends DefaultValuesFlag
-
-sealed trait UnsafeOptionFlag
-final class EnableUnsafeOption extends UnsafeOptionFlag
-final class DisableUnsafeOption extends UnsafeOptionFlag
-
-sealed trait MethodAccessorsFlag
-final class EnableMethodAccessors extends MethodAccessorsFlag
-final class DisableMethodAccessors extends MethodAccessorsFlag
-
-final class TransformerFlags[DefaultValues, UnsafeOption] {
-  def enableDefaultValues: TransformerFlags[EnableDefaultValues, UnsafeOption] =
-    new TransformerFlags[EnableDefaultValues, UnsafeOption]
-
-  def disableDefaultValues: TransformerFlags[DisableDefaultValues, UnsafeOption] =
-    new TransformerFlags[DisableDefaultValues, UnsafeOption]
-
-  def enableUnsafeOption: TransformerFlags[DefaultValues, EnableUnsafeOption] =
-    new TransformerFlags[DefaultValues, EnableUnsafeOption]
-
-  def disableUnsafeOption: TransformerFlags[DefaultValues, DisableUnsafeOption] =
-    new TransformerFlags[DefaultValues, DisableUnsafeOption]
-}
-
-object TransformerFlags {
-  type Type = TransformerFlags[_, _]
-
-  type DefaultValues = EnableDefaultValues
-  type UnsafeOption = DisableUnsafeOption
-  val default = new TransformerFlags[DefaultValues, UnsafeOption]
+final class TransformerFlags {
+  type DefaultValues = Flags.Enabled
+  type UnsafeOption = Flags.Disabled
 }
 
 trait TransformerFlagsMaterialization extends MacroUtils {
@@ -67,66 +22,31 @@ trait TransformerFlagsMaterialization extends MacroUtils {
   import c.universe._
 
   def materialize(tpe: Type): TransformerOptions = {
-    val args = tpe.typeArgs
     TransformerOptions(
-      processDefaultValues = materializeDefaultVales(
-        extractTypeArg(tpe, args, 0)
-      ) match {
-        case _: EnableDefaultValues  => true
-        case _: DisableDefaultValues => false
-      },
-      enableUnsafeOption = materializeUnsafeOption(
-        extractTypeArg(tpe, args, 1)
-      ) match {
-        case _: EnableUnsafeOption  => true
-        case _: DisableUnsafeOption => false
-      }
+      processDefaultValues = materializeFlag(extractMember(tpe, "DefaultValues")),
+      enableUnsafeOption = materializeFlag(extractMember(tpe, "UnsafeOption"))
     )
   }
 
-  private def extractTypeArg(tpe: Type, args: List[Type], pos: Int): Type = {
-    args
-      .lift(pos)
-      .getOrElse(
-        // $COVERAGE-OFF$
-        c.abort(c.enclosingPosition, s"Bad transformer config type shape!: $tpe")
-        // $COVERAGE-ON$
-      )
-
+  private def extractMember(tpe: Type, name: String): Type = {
+    tpe.member(TypeName(name)).asType.toTypeConstructor
   }
 
   object ConfigTpeConstructors {
-    val enableDefaultValuesT = typeOf[EnableDefaultValues].typeConstructor
-    val disableDefaultValuesT = typeOf[DisableDefaultValues].typeConstructor
-
-    val enableUnsafeOptionT = typeOf[EnableUnsafeOption].typeConstructor
-    val disableUnsafeOptionT = typeOf[DisableUnsafeOption].typeConstructor
+    val enabledT = typeOf[Flags.Enabled].typeConstructor
+    val disabledT = typeOf[Flags.Disabled].typeConstructor
   }
 
-  private def materializeDefaultVales(tpe: Type): DefaultValuesFlag = {
+  private def materializeFlag(tpe: Type): Boolean = {
     import ConfigTpeConstructors._
-    if (tpe =:= enableDefaultValuesT) {
-      return new EnableDefaultValues
+    if (tpe =:= enabledT) {
+      return true
     }
-    if (tpe =:= disableDefaultValuesT) {
-      return new DisableDefaultValues
+    if (tpe =:= disabledT) {
+      return false
     }
     // $COVERAGE-OFF$
-    c.abort(c.enclosingPosition, s"Bad DefaultValues type shape!: ${tpe.resultType}")
+    c.abort(c.enclosingPosition, s"Bad Flag type shape!: ${tpe.resultType}")
     // $COVERAGE-ON$
   }
-
-  private def materializeUnsafeOption(tpe: Type): UnsafeOptionFlag = {
-    import ConfigTpeConstructors._
-    if (tpe =:= enableUnsafeOptionT) {
-      return new EnableUnsafeOption
-    }
-    if (tpe =:= disableUnsafeOptionT) {
-      return new DisableUnsafeOption
-    }
-    // $COVERAGE-OFF$
-    c.abort(c.enclosingPosition, s"Bad UnsafeOption type shape!: ${tpe.resultType}")
-    // $COVERAGE-ON$
-  }
-
 }

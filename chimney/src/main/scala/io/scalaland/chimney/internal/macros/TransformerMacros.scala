@@ -44,7 +44,7 @@ trait TransformerMacros
   def expandTransform[From: WeakTypeTag, To: WeakTypeTag, C: WeakTypeTag, Flags: WeakTypeTag](
       tfsTree: Tree = EmptyTree
   ): Tree = {
-    val Flags = weakTypeOf[Flags].dealias
+    val Flags = weakTypeOf[Flags]
     val C = weakTypeOf[C]
     val tiName = TermName(c.freshName("ti"))
     val flags = materialize(Flags)

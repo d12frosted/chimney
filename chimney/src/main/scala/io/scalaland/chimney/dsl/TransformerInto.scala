@@ -14,16 +14,15 @@ import scala.language.experimental.macros
   * @param  td    transformer definition
   * @tparam From  type of input value
   * @tparam To    type of output value
+  * @tparam Cfg     type-level encoded config
   * @tparam Flags type-level encoded flags
-  * @tparam C     type-level encoded config
   */
-final class TransformerInto[From, To, C <: TransformerCfg, DefaultValues, UnsafeOption](
+final class TransformerInto[From, To, Cfg <: TransformerCfg, Flags <: TransformerFlags](
     val source: From,
-    val td: TransformerDefinition[From, To, C, DefaultValues, UnsafeOption]
-) extends ConfigDsl[Lambda[`C1 <: TransformerCfg` => TransformerInto[From, To, C1, DefaultValues, UnsafeOption]], C]
-    with AConfigDsl[Lambda[
-      (DefaultValues1, UnsafeOption1) => TransformerInto[From, To, C, DefaultValues1, UnsafeOption1]
-    ], DefaultValues, UnsafeOption] {
+    val td: TransformerDefinition[From, To, Cfg, Flags]
+) extends ConfigDsl[Lambda[
+      (`Cfg1 <: TransformerCfg`, `Flags1 <: TransformerFlags`) => TransformerInto[From, To, Cfg1, Flags1]
+    ], Cfg, Flags] {
 
   /** Lifts current transformation with provided type constructor `F`.
     *
@@ -33,8 +32,8 @@ final class TransformerInto[From, To, C <: TransformerCfg, DefaultValues, Unsafe
     * @tparam F    wrapper type constructor
     * @return [[io.scalaland.chimney.dsl.TransformerFInto]]
     */
-  def lift[F[+_]]: TransformerFInto[F, From, To, WrapperType[F, C], DefaultValues, UnsafeOption] =
-    new TransformerFInto[F, From, To, WrapperType[F, C], DefaultValues, UnsafeOption](
+  def lift[F[+_]]: TransformerFInto[F, From, To, WrapperType[F, Cfg], Flags] =
+    new TransformerFInto[F, From, To, WrapperType[F, Cfg], Flags](
       source,
       td.lift[F]
     )
@@ -49,7 +48,7 @@ final class TransformerInto[From, To, C <: TransformerCfg, DefaultValues, Unsafe
   def withFieldConst[T, U](
       selector: To => T,
       value: U
-  ): TransformerInto[From, To, _ <: TransformerCfg, DefaultValues, UnsafeOption] =
+  ): TransformerInto[From, To, _ <: TransformerCfg, Flags] =
     macro TransformerIntoWhiteboxMacros.withFieldConstImpl
 
   /** Use wrapped `value` provided here for field picked using `selector`.
@@ -64,7 +63,7 @@ final class TransformerInto[From, To, C <: TransformerCfg, DefaultValues, Unsafe
   def withFieldConstF[F[+_], T, U](
       selector: To => T,
       value: F[U]
-  ): TransformerFInto[F, From, To, _ <: TransformerCfg, DefaultValues, UnsafeOption] =
+  ): TransformerFInto[F, From, To, _ <: TransformerCfg, Flags] =
     macro TransformerIntoWhiteboxMacros.withFieldConstFImpl[F]
 
   /** Use `map` provided here to compute value of field picked using `selector`.
@@ -79,7 +78,7 @@ final class TransformerInto[From, To, C <: TransformerCfg, DefaultValues, Unsafe
   def withFieldComputed[T, U](
       selector: To => T,
       map: From => U
-  ): TransformerInto[From, To, _ <: TransformerCfg, DefaultValues, UnsafeOption] =
+  ): TransformerInto[From, To, _ <: TransformerCfg, Flags] =
     macro TransformerIntoWhiteboxMacros.withFieldComputedImpl
 
   /** Use `map` provided here to compute wrapped value of field picked using `selector`.
@@ -94,7 +93,7 @@ final class TransformerInto[From, To, C <: TransformerCfg, DefaultValues, Unsafe
   def withFieldComputedF[F[+_], T, U](
       selector: To => T,
       map: From => F[U]
-  ): TransformerFInto[F, From, To, _ <: TransformerCfg, DefaultValues, UnsafeOption] =
+  ): TransformerFInto[F, From, To, _ <: TransformerCfg, Flags] =
     macro TransformerIntoWhiteboxMacros.withFieldComputedFImpl[F]
 
   /** Use `selectorFrom` field in `From` to obtain the value of `selectorTo` field in `To`
@@ -109,7 +108,7 @@ final class TransformerInto[From, To, C <: TransformerCfg, DefaultValues, Unsafe
   def withFieldRenamed[T, U](
       selectorFrom: From => T,
       selectorTo: To => U
-  ): TransformerInto[From, To, _ <: TransformerCfg, DefaultValues, UnsafeOption] =
+  ): TransformerInto[From, To, _ <: TransformerCfg, Flags] =
     macro TransformerIntoWhiteboxMacros.withFieldRenamedImpl
 
   /** Use `f` to calculate the (missing) coproduct instance when mapping one coproduct into another
@@ -125,7 +124,7 @@ final class TransformerInto[From, To, C <: TransformerCfg, DefaultValues, Unsafe
     */
   def withCoproductInstance[Inst](
       f: Inst => To
-  ): TransformerInto[From, To, _ <: TransformerCfg, DefaultValues, UnsafeOption] =
+  ): TransformerInto[From, To, _ <: TransformerCfg, Flags] =
     macro TransformerIntoWhiteboxMacros.withCoproductInstanceImpl
 
   /** Use `f` to calculate the (missing) wrapped coproduct instance when mapping one coproduct into another
@@ -141,7 +140,7 @@ final class TransformerInto[From, To, C <: TransformerCfg, DefaultValues, Unsafe
     */
   def withCoproductInstanceF[F[+_], Inst](
       f: Inst => F[To]
-  ): TransformerFInto[F, From, To, _ <: TransformerCfg, DefaultValues, UnsafeOption] =
+  ): TransformerFInto[F, From, To, _ <: TransformerCfg, Flags] =
     macro TransformerIntoWhiteboxMacros.withCoproductInstanceFImpl[F]
 
   /** Apply configured transformation in-place.
@@ -153,19 +152,13 @@ final class TransformerInto[From, To, C <: TransformerCfg, DefaultValues, Unsafe
     * @return transformed value of type `To`
     */
   def transform: To =
-    macro ChimneyBlackboxMacros.transformImpl[From, To, C, TransformerFlags[DefaultValues, UnsafeOption]]
+    macro ChimneyBlackboxMacros.transformImpl[From, To, Cfg, Flags]
 
   /** Used internally by macro. Please don't use in your code.
     */
   def __refineTransformerDefinition[C1 <: TransformerCfg](
-      f: TransformerDefinition[From, To, C, DefaultValues, UnsafeOption] => TransformerDefinition[
-        From,
-        To,
-        C1,
-        DefaultValues,
-        UnsafeOption
-      ]
-  ): TransformerInto[From, To, C1, DefaultValues, UnsafeOption] =
-    new TransformerInto[From, To, C1, DefaultValues, UnsafeOption](source, f(td))
+      f: TransformerDefinition[From, To, Cfg, Flags] => TransformerDefinition[From, To, C1, Flags]
+  ): TransformerInto[From, To, C1, Flags] =
+    new TransformerInto[From, To, C1, Flags](source, f(td))
 
 }

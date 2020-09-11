@@ -9,7 +9,7 @@ import io.scalaland.chimney.internal.TransformerCfg.{
 }
 import io.scalaland.chimney._
 
-trait AConfigDsl[CC[_, _], DefaultValues, UnsafeOption] {
+trait ConfigDsl[R[_ <: TransformerCfg, _ <: TransformerFlags], Cfg <: TransformerCfg, Flags <: TransformerFlags] {
 
   /** Fail derivation if `From` type is missing field even if `To` has default value for it.
     *
@@ -17,8 +17,8 @@ trait AConfigDsl[CC[_, _], DefaultValues, UnsafeOption] {
     *
     * @see [[https://scalalandio.github.io/chimney/transformers/default-values.html#disabling-default-values-in-generated-transformer]] for more details
     */
-  def disableDefaultValues: CC[DisableDefaultValues, UnsafeOption] =
-    this.asInstanceOf[CC[DisableDefaultValues, UnsafeOption]]
+  def disableDefaultValues: R[Cfg, Flags { type DefaultValues = Flags.Disabled }] =
+    this.asInstanceOf[R[Cfg, Flags { type DefaultValues = Flags.Disabled }]]
 
   /** Use default value of field in `To` if field is missing in `From`.
     *
@@ -26,8 +26,8 @@ trait AConfigDsl[CC[_, _], DefaultValues, UnsafeOption] {
     *
     * @see [[https://scalalandio.github.io/chimney/transformers/default-values.html#disabling-default-values-in-generated-transformer]] for more details
     */
-  def enableDefaultValues: CC[EnableDefaultValues, UnsafeOption] =
-    this.asInstanceOf[CC[EnableDefaultValues, UnsafeOption]]
+  def enableDefaultValues: R[Cfg, Flags { type DefaultValues = Flags.Enabled }] =
+    this.asInstanceOf[R[Cfg, Flags { type DefaultValues = Flags.Enabled }]]
 
   /** Disable unsafe call to `.get` when source type From contains field of type `Option[A]`,
     * but target type To defines this fields as `A`.
@@ -36,8 +36,8 @@ trait AConfigDsl[CC[_, _], DefaultValues, UnsafeOption] {
     *
     * @see [[https://scalalandio.github.io/chimney/transformers/unsafe-options.html]] for more details
     */
-  def disableUnsafeOption: CC[DefaultValues, DisableUnsafeOption] =
-    this.asInstanceOf[CC[DefaultValues, DisableUnsafeOption]]
+  def disableUnsafeOption: R[Cfg, Flags { type UnsafeOption = Flags.Disabled }] =
+    this.asInstanceOf[R[Cfg, Flags { type UnsafeOption = Flags.Disabled }]]
 
   /** Enable unsafe call to `.get` when source type From contains field of type `Option[A]`,
     * but target type To defines this fields as `A`.
@@ -48,11 +48,8 @@ trait AConfigDsl[CC[_, _], DefaultValues, UnsafeOption] {
     *
     * @see [[https://scalalandio.github.io/chimney/transformers/unsafe-options.html]] for more details
     */
-  def enableUnsafeOption: CC[DefaultValues, EnableUnsafeOption] =
-    this.asInstanceOf[CC[DefaultValues, EnableUnsafeOption]]
-}
-
-trait ConfigDsl[CC[_ <: TransformerCfg], C <: TransformerCfg] {
+  def enableUnsafeOption: R[Cfg, Flags { type UnsafeOption = Flags.Enabled }] =
+    this.asInstanceOf[R[Cfg, Flags { type UnsafeOption = Flags.Enabled }]]
 
   /** Enable values to be supplied from method calls. Source method must be public and have no parameter list.
     *
@@ -60,8 +57,8 @@ trait ConfigDsl[CC[_ <: TransformerCfg], C <: TransformerCfg] {
     *
     * @see [[https://scalalandio.github.io/chimney/transformers/customizing-transformers.html#using-method-accessors]] for more details
     */
-  def enableMethodAccessors: CC[EnableMethodAccessors[C]] =
-    this.asInstanceOf[CC[EnableMethodAccessors[C]]]
+  def enableMethodAccessors: R[EnableMethodAccessors[Cfg], Flags] =
+    this.asInstanceOf[R[EnableMethodAccessors[Cfg], Flags]]
 
   /** Enable Java Beans naming convention (`.getName`, `.isName`) on `From`.
     *
@@ -69,8 +66,8 @@ trait ConfigDsl[CC[_ <: TransformerCfg], C <: TransformerCfg] {
     *
     * @see [[https://scalalandio.github.io/chimney/transformers/java-beans.html#reading-from-java-beans]] for more details
     */
-  def enableBeanGetters: CC[EnableBeanGetters[C]] =
-    this.asInstanceOf[CC[EnableBeanGetters[C]]]
+  def enableBeanGetters: R[EnableBeanGetters[Cfg], Flags] =
+    this.asInstanceOf[R[EnableBeanGetters[Cfg], Flags]]
 
   /** Enable Java Beans naming convention (`.setName(value)`) on `To`.
     *
@@ -78,8 +75,8 @@ trait ConfigDsl[CC[_ <: TransformerCfg], C <: TransformerCfg] {
     *
     * @see [[https://scalalandio.github.io/chimney/transformers/java-beans.html#writing-to-java-beans]] for more details
     */
-  def enableBeanSetters: CC[EnableBeanSetters[C]] =
-    this.asInstanceOf[CC[EnableBeanSetters[C]]]
+  def enableBeanSetters: R[EnableBeanSetters[Cfg], Flags] =
+    this.asInstanceOf[R[EnableBeanSetters[Cfg], Flags]]
 
   /** Sets target value of optional field to None if field is missing from source type From.
     *
@@ -87,6 +84,6 @@ trait ConfigDsl[CC[_ <: TransformerCfg], C <: TransformerCfg] {
     *
     * @see [[https://scalalandio.github.io/chimney/transformers/default-values.html#default-values-for-option-fields]] for more details
     */
-  def enableOptionDefaultsToNone: CC[EnableOptionDefaultsToNone[C]] =
-    this.asInstanceOf[CC[EnableOptionDefaultsToNone[C]]]
+  def enableOptionDefaultsToNone: R[EnableOptionDefaultsToNone[Cfg], Flags] =
+    this.asInstanceOf[R[EnableOptionDefaultsToNone[Cfg], Flags]]
 }

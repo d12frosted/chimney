@@ -1,6 +1,5 @@
 package io.scalaland.chimney
 
-import io.scalaland.chimney.TransformerFlags.{DefaultValues, UnsafeOption}
 import io.scalaland.chimney.internal.{PatcherCfg, TransformerCfg}
 
 import scala.language.experimental.macros
@@ -9,7 +8,15 @@ import scala.language.experimental.macros
   */
 package object dsl {
 
-  implicit val transformerFlags: TransformerFlags[DefaultValues, UnsafeOption] = TransformerFlags.default
+  implicit val transformerFlags: TransformerFlags = new TransformerFlags
+
+  implicit class TransformerFlagsOps[Flags <: TransformerFlags](private val flags: Flags) extends AnyVal {
+    def enableDefaultValues: Flags { type DefaultValues = Flags.Enabled } =
+      flags.asInstanceOf[Flags { type DefaultValues = Flags.Enabled }]
+
+    def disableDefaultValues: Flags { type DefaultValues = Flags.Disabled } =
+      flags.asInstanceOf[Flags { type DefaultValues = Flags.Disabled }]
+  }
 
   /** Provides transformer operations on values of any type.
     *
@@ -23,22 +30,10 @@ package object dsl {
       * @tparam To target type
       * @return [[io.scalaland.chimney.dsl.TransformerInto]]
       */
-    final def into[To]: TransformerInto[
-      From,
-      To,
-      TransformerCfg.Empty,
-      TransformerFlags.DefaultValues,
-      TransformerFlags.UnsafeOption
-    ] = {
+    final def into[To]: TransformerInto[From, To, TransformerCfg.Empty, TransformerFlags] = {
       new TransformerInto(
         source,
-        new TransformerDefinition[
-          From,
-          To,
-          TransformerCfg.Empty,
-          TransformerFlags.DefaultValues,
-          TransformerFlags.UnsafeOption
-        ](Map.empty, Map.empty)
+        new TransformerDefinition[From, To, TransformerCfg.Empty, TransformerFlags](Map.empty, Map.empty)
       )
     }
 
@@ -65,17 +60,10 @@ package object dsl {
       * @return [[io.scalaland.chimney.dsl.TransformerFInto]]
       */
     final def intoF[F[+_], To]
-        : TransformerFInto[F, From, To, TransformerCfg.WrapperType[F, TransformerCfg.Empty], TransformerFlags.DefaultValues, TransformerFlags.UnsafeOption] =
+        : TransformerFInto[F, From, To, TransformerCfg.WrapperType[F, TransformerCfg.Empty], TransformerFlags] =
       new TransformerFInto(
         source,
-        new TransformerFDefinition[
-          F,
-          From,
-          To,
-          TransformerCfg.WrapperType[F, TransformerCfg.Empty],
-          TransformerFlags.DefaultValues,
-          TransformerFlags.UnsafeOption
-        ](
+        new TransformerFDefinition[F, From, To, TransformerCfg.WrapperType[F, TransformerCfg.Empty], TransformerFlags](
           Map.empty,
           Map.empty
         )
