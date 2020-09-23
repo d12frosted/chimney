@@ -113,15 +113,24 @@ object DslSpec extends TestSuite {
             SomeFoo("foo").into[Foobar2].enableOptionDefaultsToNone.transform ==> Foobar2("foo", Some(42))
           }
 
-          //"not compile if default value is missing and no .enableOptionDefaultsToNone" - {
-          //  compileError("""SomeFoo("foo").into[Foobar].transform""")
-          //    .check("", "Chimney can't derive transformation from SomeFoo to Foobar")
-          //}
-          //
-          //"not compile if default values are disabled and no .enableOptionDefaultsToNone" - {
-          //  compileError("""SomeFoo("foo").into[Foobar2].disableDefaultValues.transform""")
-          //    .check("", "Chimney can't derive transformation from SomeFoo to Foobar2")
-          //}
+          "not compile if default value is missing and no .enableOptionDefaultsToNone" - {
+            compileError("""SomeFoo("foo").into[Foobar].transform""")
+              .check("", "Chimney can't derive transformation from SomeFoo to Foobar")
+          }
+
+          "not compile if default values are disabled and no .enableOptionDefaultsToNone" - {
+            compileError("""SomeFoo("foo").into[Foobar2].disableDefaultValues.transform""")
+              .check("", "Chimney can't derive transformation from SomeFoo to Foobar2")
+          }
+
+          "not compile if default values are disabled in config and no .enableOptionDefaultsToNone" - {
+            compileError("""
+                implicit val transformerFlags: TransformerFlags[DisableDefaultValues, DisableUnsafeOption] = 
+                  TransformerFlags.default.disableDefaultValues
+                SomeFoo("foo").transformInto[Foobar2]
+                """)
+              .check("", "Chimney can't derive transformation from SomeFoo to Foobar2")
+          }
         }
 
         "use implicit transformer for option when .enableUnsafeOption" - {
